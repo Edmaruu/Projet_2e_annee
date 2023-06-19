@@ -1,0 +1,4438 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Niveau</title>
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.55.0/dist/phaser.js"></script>
+    <style type="text/css">
+      body {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="text/javascript">
+      // Le code est répétitifs pour chaque tuto et niveau, ainsi seul le niveau 1 est commenté ainsi que le menu et les fonctions.
+      // les fonctions commencent à partir de la ligne 4087
+
+      // on crée nos variables
+      var music;
+      var monTim;
+      var monTime;
+      var monTime2;
+      var monTime3;
+      var bouton;
+      var barrierevrouge;
+      var Bappui;
+      var Jappui;
+      var Oappui;
+      var reappui;
+      var roappui;
+      var levJpos;
+      var levBpos;
+      var levOpos;
+      var levRepos;
+      var levRopos;
+      var lave;
+      var levier;
+      var monTimer;
+      var groupeBullets;
+      var groupeBulletsM;
+      var monster;
+      var monster2;
+      var monster3;
+      var skull;
+      var skullD;
+      var levierrouge;
+      var levierjaune;
+      var levierrose;
+      var levierbleu;
+      var levierorange;
+      var barriereV;
+      var barriereP;
+      var barriereB;
+      var barriereJ;
+      var grilleprouge;
+      var barrierevjaune;
+      var grillevbleu;
+      var barriereporange;
+      var barriereprouge;
+      var barrierevjaune;
+      var barrierevorange;
+      var barrierevrose;
+      var grillepbleu;
+      var grillevorange;
+      var grilleV;
+      var grilleP;
+      var boutonFeu;
+      var boutonFeu2;
+      var platforms;
+      var player;
+      var direction = "right";
+      var player2;
+      var direction2 = "right";
+      var J2Haut;
+      var J2Gauche;
+      var J2Droite;
+      var currentScene;
+      var CleVert;
+      var CleViolet;
+      var PorteVert;
+      var PorteViolet;
+      var boutonbleu;
+      var boutonjaune;
+      var boutonOrange;
+      var boutonrouge;
+      var boutonrose;
+      var test = false;
+      var test2 = false;
+      var game;
+      var bouton_play;
+      var bouton_next;
+      var cursors;
+      window.onload = function () {
+        // on créer une nouvelle fenetre pour pouvoir changer de scène
+        var config = {
+          physics: {
+            default: "arcade",
+            arcade: {
+              gravity: { y: 500 },
+              debug: false
+            }
+          },
+          type: Phaser.AUTO,
+          width: 800,
+          height: 600,
+          scene: [
+            // la liste des scènes disponibles dans notre jeu
+            menu,
+            regle,
+            tuto1,
+            tuto2,
+            tuto3,
+            tuto4,
+            tuto5,
+            niveau1,
+            niveau2,
+            niveau3
+          ]
+        };
+        game = new Phaser.Game(config); // on crée le jeu
+        game.scene.start("menu"); // on charge la scène du "menu" en premiere
+      };
+
+      class menu extends Phaser.Scene {
+        constructor() {
+          super({ key: "menu" });
+        }
+        //on charge les images
+        preload() {
+          // on ajoute nos images dans le code et on leur donne une clé pour pouvoir les appelés.
+
+          this.load.image("sol", "plateforme_sable.png");
+          this.load.image("menu_fond", "fond.png");
+          this.load.image("imageBoutonregle", "regles_bouton.png");
+          this.load.image("imageBoutontuto", "tutoriel_bouton.png");
+          this.load.image("imageBoutonplay", "jouer_bouton.png");
+          this.load.image("titre_jeu", "titrejeu.png");
+          this.load.spritesheet("feucamp", "campfire.png", {
+            frameWidth: 48,
+            frameHeight: 96
+          });
+          this.load.spritesheet("archer", "archer.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+          this.load.spritesheet("mage", "mage.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+        }
+
+        create() {
+          platforms = this.physics.add.staticGroup(); // on créer un groupe statique pour nos plateforme pour pas qu'elle soit soumise à la gravité
+          this.anims.create({
+            //on créer une animation pour le feu de camp de l'écran d'accueil
+            key: "campfeu",
+            frames: this.anims.generateFrameNumbers("feucamp", {
+              start: 0,
+              end: 7
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.add.image(400, 300, "menu_fond").setScale(0.59); //on ajoute le fond de notre menu
+
+          this.add.image(400, 130, "titre_jeu").setScale(2.5); // on rajoute le titre
+          this.add.sprite(400, 470, "feucamp", 0).play("campfeu").setScale(3); //on ajoute le feu de camp
+          this.add.image(400, 600, "sol").setScale(2); //on ajoute le sol
+          this.add.sprite(650, 500, "mage", 0).setScale(3); // on ajoute le mage
+          this.add.sprite(150, 500, "archer", 2).setScale(3); // on ajoute l'archer
+          var bouton_regle = this.add // on créer un bouton règle
+            .image(150, 350, "imageBoutonregle") // on le place où l'on veut
+            .setScale(2)
+            .setDepth(1);
+
+          var bouton_tuto = this.add // on créer un bouton tutoriel
+            .image(650, 350, "imageBoutontuto") // on le place où l'on veut
+            .setScale(2)
+            .setDepth(1);
+
+          var bouton_play = this.add //on créer le bouton play
+            .image(400, 270, "imageBoutonplay") // on le place où l'on veut
+            .setScale(2)
+            .setDepth(1);
+
+          //on rend les bouton interractifs
+          bouton_regle.setInteractive();
+          bouton_tuto.setInteractive();
+          bouton_play.setInteractive();
+
+          //Cas ou la souris clique sur le bouton règle :
+          bouton_regle.on("pointerup", () => {
+            game.sound.stopAll();
+            this.scene.start("regle"); // on affiche la scène "règle"
+          });
+
+          //Cas ou la souris clique sur le bouton tutoriel :
+          bouton_tuto.on("pointerup", () => {
+            game.sound.stopAll();
+            this.scene.start("tuto1"); //on affiche la scène "tuto1"
+          });
+
+          //Cas ou la souris clique sur le bouton play :
+          bouton_play.on("pointerup", () => {
+            game.sound.stopAll();
+            this.scene.start("niveau1"); //on affiche la scène "niveau1"
+          });
+        }
+      }
+
+      class regle extends Phaser.Scene {
+        constructor() {
+          super({ key: "regle" });
+        }
+
+        preload() {
+          // on ajoute les images du jeu
+          this.load.image("regle", "règle du jeu.png");
+          this.load.image("imageboutonnext", "bouton_next.png");
+        }
+
+        create() {
+          this.add
+            .image(50, -10, "regle")
+            .setScale(0.8)
+            .setOrigin(0)
+            .setDepth(0); // on charge l'image des règles sur la map
+          var bouton_next = this.add // on créer un bouton next
+            .image(750, 550, "imageboutonnext") // on le place où l'on veut
+            .setScale(0.2)
+            .setDepth(1);
+          bouton_next.setInteractive(); //on rend le bouton next interactif
+          //Cas ou la souris clique sur le bouton next :
+          bouton_next.on("pointerup", () => {
+            this.scene.start("menu"); // on charge la scène "menu"
+          });
+        }
+      }
+
+      class tuto1 extends Phaser.Scene {
+        constructor() {
+          super({ key: "tuto1" });
+        }
+
+        preload() {
+          this.load.audio("persona", "musica.mp3");
+          this.load.image("fond", "fond.png");
+          this.load.spritesheet("barriereB", "barriere_grille_bleu.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("barriereJ", "barriere_grille_jaune.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("barriereRe", "barriere_grille_rouge.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("barriereRo", "barriere_grille_rose.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("barriereO", "barriere_grille_orange.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("fleche", "fleche.png", {
+            frameWidth: 48,
+            frameHeight: 32
+          });
+          this.load.spritesheet("levierJ", "levier_jaune.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierRe", "levier_rouge.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierB", "levier_bleu.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierO", "levier_orange.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierRo", "levier_rose.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("boutonJ", "bouton_jaune.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonRe", "bouton_rouge.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonB", "bouton_bleu.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonO", "bouton_orange.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonRo", "bouton_rose.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          //TEST SARAH POUR LES FLAMMES
+          this.load.spritesheet("feu", "feu_violet.png", {
+            frameWidth: 48,
+            frameHeight: 32
+          }); //FIN TEST
+          this.load.image("sol", "plateforme_sable.png");
+          this.load.image("plat", "plateforme_fine.png");
+          this.load.spritesheet("archer", "archer.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+          this.load.spritesheet("mage", "mage.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+          this.load.image("CleVert", "cle_vert.png"); // on ajoute l'image de la clé verte
+          this.load.image("CleViolet", "cle_violet.png"); // on ajoute l'image de la clé violette
+
+          this.load.spritesheet("PorteVert", "porte_vert.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+
+          this.load.spritesheet("PorteViolet", "porte_violet.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+        }
+
+        create() {
+          currentScene = this;
+          groupeBullets = this.physics.add.group();
+          music = game.sound.add("persona");
+          music.play();
+
+          boutonFeu = this.input.keyboard.addKey("down");
+          boutonFeu2 = this.input.keyboard.addKey("S");
+          J2Haut = this.input.keyboard.addKey("Z");
+          J2Gauche = this.input.keyboard.addKey("Q");
+          J2Droite = this.input.keyboard.addKey("D");
+
+          this.add.image(400, 300, "fond").setScale(0.59);
+
+          grilleV = this.physics.add.staticGroup();
+          grilleP = this.physics.add.staticGroup();
+          barriereV = this.physics.add.staticGroup();
+          barriereP = this.physics.add.staticGroup();
+          bouton = this.physics.add.staticGroup();
+
+          this.physics.add.collider(
+            groupeBullets,
+            barriereV,
+            detruire,
+            null,
+            this
+          );
+          this.physics.add.collider(
+            groupeBullets,
+            barriereP,
+            detruire,
+            null,
+            this
+          );
+
+          platforms = this.physics.add.staticGroup();
+          platforms.create(400, 580, "sol").setScale(2).refreshBody();
+          platforms.create(900, 375, "plat").setScale(2).refreshBody();
+
+          CleVert = this.physics.add.staticGroup();
+          CleVert.create(400, 520, "CleVert").setScale(2).refreshBody();
+
+          CleViolet = this.physics.add.staticGroup();
+          CleViolet.create(350, 520, "CleViolet").setScale(2).refreshBody();
+
+          PorteVert = this.physics.add.sprite(770, 325, "PorteVert");
+          PorteVert.setScale(1.25);
+          PorteVert.setCollideWorldBounds(true);
+          this.physics.add.collider(PorteVert, platforms);
+
+          PorteViolet = this.physics.add.sprite(700, 325, "PorteViolet");
+          PorteViolet.setScale(1.25);
+          PorteViolet.setCollideWorldBounds(true);
+          this.physics.add.collider(PorteViolet, platforms);
+
+          player = this.physics.add.sprite(100, 450, "archer", 2);
+          player.setCollideWorldBounds(true);
+          // player.disableBody(true, true);
+          //this.physics.pause();
+          this.physics.add.collider(player, platforms);
+
+          cursors = this.input.keyboard.createCursorKeys();
+          this.anims.create({
+            key: "left",
+            frames: this.anims.generateFrameNumbers("archer", {
+              start: 0,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "right",
+            frames: this.anims.generateFrameNumbers("archer", {
+              start: 2,
+              end: 3
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          player2 = this.physics.add.sprite(150, 450, "mage", 2);
+          player2.setCollideWorldBounds(true);
+          this.physics.add.collider(player2, platforms);
+          this.physics.add.collider(player2, barriereV);
+          this.physics.add.collider(player, barriereP);
+          this.physics.add.collider(player2, grilleV);
+          this.physics.add.collider(player, grilleP);
+          this.physics.add.collider(player, bouton);
+          this.physics.add.collider(player2, bouton);
+
+          this.anims.create({
+            key: "Q",
+            frames: this.anims.generateFrameNumbers("mage", {
+              start: 0,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "D",
+            frames: this.anims.generateFrameNumbers("mage", {
+              start: 2,
+              end: 3
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Rose0",
+            frames: this.anims.generateFrameNumbers("boutonRe", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Rose1",
+            frames: this.anims.generateFrameNumbers("boutonRe", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Rouge0",
+            frames: this.anims.generateFrameNumbers("boutonRo", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Rouge1",
+            frames: this.anims.generateFrameNumbers("boutonRo", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "bleu0",
+            frames: this.anims.generateFrameNumbers("boutonB", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "bleu1",
+            frames: this.anims.generateFrameNumbers("boutonB", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Oran0",
+            frames: this.anims.generateFrameNumbers("boutonO", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Oran1",
+            frames: this.anims.generateFrameNumbers("boutonO", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Jaune0",
+            frames: this.anims.generateFrameNumbers("boutonJ", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Jaune1",
+            frames: this.anims.generateFrameNumbers("boutonJ", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+
+          this.anims.create({
+            key: "V",
+            frames: this.anims.generateFrameNumbers("PorteVert", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+
+          this.anims.create({
+            key: "Vi",
+            frames: this.anims.generateFrameNumbers("PorteViolet", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+        }
+
+        update() {
+          if (cursors.left.isDown) {
+            direction = "left";
+            player.setVelocityX(-160);
+            player.anims.play("left", true);
+          } else if (cursors.right.isDown) {
+            direction = "right";
+            player.setVelocityX(160);
+            player.anims.play("right", true);
+          } else {
+            player.setVelocityX(0);
+          }
+
+          if (cursors.up.isDown && player.body.touching.down) {
+            player.setVelocityY(-450);
+          }
+
+          if (Phaser.Input.Keyboard.JustDown(boutonFeu)) {
+            tirer(player, direction);
+          }
+          if (J2Gauche.isDown) {
+            direction2 = "left";
+            player2.setVelocityX(-160);
+            player2.anims.play("Q", true);
+          } else if (J2Droite.isDown) {
+            direction2 = "right";
+            player2.setVelocityX(160);
+            player2.anims.play("D", true);
+          } else {
+            player2.setVelocityX(0);
+          }
+
+          if (J2Haut.isDown && player2.body.touching.down) {
+            player2.setVelocityY(-450);
+          }
+          if (Phaser.Input.Keyboard.JustDown(boutonFeu2)) {
+            tirer2(player2, direction2);
+          }
+          this.physics.add.overlap(
+            groupeBullets,
+            barriereV,
+            detruire,
+            null,
+            this
+          );
+
+          this.physics.add.overlap(player, CleVert, collectCle, null, this);
+          this.physics.add.overlap(player2, CleViolet, collectCle2, null, this);
+
+          if (player.possedeCle == true) {
+            this.physics.add.overlap(
+              player,
+              PorteVert,
+              openPorteVert,
+              null,
+              this
+            );
+          }
+
+          if (player2.possedeCle == true) {
+            this.physics.add.overlap(
+              player2,
+              PorteViolet,
+              openPorteViolet,
+              null,
+              this
+            );
+          }
+
+          if (PorteVert.ouvert == true && PorteViolet.ouvert == true) {
+            game.sound.stopAll();
+            this.scene.start("tuto2");
+          }
+        }
+      }
+
+      class tuto2 extends Phaser.Scene {
+        constructor() {
+          super({ key: "tuto2" });
+        }
+
+        preload() {
+          this.load.audio("persona", "musica.mp3");
+          this.load.image("fond", "fond.png");
+          this.load.spritesheet("barriereB", "barriere_grille_bleu.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("barriereJ", "barriere_grille_jaune.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("barriereRe", "barriere_grille_rouge.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("barriereRo", "barriere_grille_rose.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("barriereO", "barriere_grille_orange.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("fleche", "fleche.png", {
+            frameWidth: 48,
+            frameHeight: 32
+          });
+          this.load.spritesheet("levierJ", "levier_jaune.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierRe", "levier_rouge.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierB", "levier_bleu.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierO", "levier_orange.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierRo", "levier_rose.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("boutonJ", "bouton_jaune.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonRe", "bouton_rouge.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonB", "bouton_bleu.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonO", "bouton_orange.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonRo", "bouton_rose.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          //TEST SARAH POUR LES FLAMMES
+          this.load.spritesheet("feu", "feu_violet.png", {
+            frameWidth: 48,
+            frameHeight: 32
+          }); //FIN TEST
+          this.load.image("sol", "plateforme_sable.png");
+          this.load.image("plat", "plateforme_fine.png");
+          this.load.image("platM", "plateforme_millieu.png");
+          this.load.spritesheet("archer", "archer.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+          this.load.spritesheet("mage", "mage.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+          this.load.image("CleVert", "cle_vert.png");
+          this.load.image("CleViolet", "cle_violet.png");
+
+          this.load.spritesheet("PorteVert", "porte_vert.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+
+          this.load.spritesheet("PorteViolet", "porte_violet.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+        }
+
+        create() {
+          currentScene = this;
+          music = game.sound.add("persona");
+          music.play();
+
+          groupeBullets = this.physics.add.group();
+
+          boutonFeu = this.input.keyboard.addKey("down");
+          boutonFeu2 = this.input.keyboard.addKey("S");
+          J2Haut = this.input.keyboard.addKey("Z");
+          J2Gauche = this.input.keyboard.addKey("Q");
+          J2Droite = this.input.keyboard.addKey("D");
+
+          this.add.image(400, 300, "fond").setScale(0.59);
+
+          grilleV = this.physics.add.staticGroup();
+          grilleP = this.physics.add.staticGroup();
+          barriereV = this.physics.add.staticGroup();
+          barriereP = this.physics.add.staticGroup();
+          bouton = this.physics.add.staticGroup();
+
+          this.physics.add.collider(
+            groupeBullets,
+            barriereV,
+            detruire,
+            null,
+            this
+          );
+          this.physics.add.collider(
+            groupeBullets,
+            barriereP,
+            detruire,
+            null,
+            this
+          );
+
+          platforms = this.physics.add.staticGroup();
+          platforms.create(400, 580, "sol").setScale(2).refreshBody();
+          platforms.create(400, 375, "platM").setScale(2).refreshBody();
+
+          barriereV
+            .create(285, 470, "barriereJ", 1)
+            .setScale(3.15)
+            .refreshBody();
+          barriereP
+            .create(515, 470, "barriereJ", 4)
+            .setScale(3.15)
+            .refreshBody();
+
+          CleVert = this.physics.add.staticGroup();
+          CleVert.create(450, 520, "CleVert").setScale(2).refreshBody();
+
+          CleViolet = this.physics.add.staticGroup();
+          CleViolet.create(350, 520, "CleViolet").setScale(2).refreshBody();
+
+          PorteVert = this.physics.add.sprite(350, 325, "PorteVert");
+          PorteVert.setScale(1.25);
+          PorteVert.setCollideWorldBounds(true);
+          this.physics.add.collider(PorteVert, platforms);
+
+          PorteViolet = this.physics.add.sprite(450, 325, "PorteViolet");
+          PorteViolet.setScale(1.25);
+          PorteViolet.setCollideWorldBounds(true);
+          this.physics.add.collider(PorteViolet, platforms);
+
+          player = this.physics.add.sprite(750, 450, "archer", 1);
+          player.setCollideWorldBounds(true);
+
+          this.physics.add.collider(player, platforms);
+
+          cursors = this.input.keyboard.createCursorKeys();
+          this.anims.create({
+            key: "left",
+            frames: this.anims.generateFrameNumbers("archer", {
+              start: 0,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "right",
+            frames: this.anims.generateFrameNumbers("archer", {
+              start: 2,
+              end: 3
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          player2 = this.physics.add.sprite(40, 450, "mage", 2);
+          player2.setCollideWorldBounds(true);
+          this.physics.add.collider(player2, platforms);
+          this.physics.add.collider(player2, barriereV);
+          this.physics.add.collider(player, barriereP);
+          this.physics.add.collider(player2, grilleV);
+          this.physics.add.collider(player, grilleP);
+          this.physics.add.collider(player, bouton);
+          this.physics.add.collider(player2, bouton);
+
+          this.anims.create({
+            key: "Q",
+            frames: this.anims.generateFrameNumbers("mage", {
+              start: 0,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "D",
+            frames: this.anims.generateFrameNumbers("mage", {
+              start: 2,
+              end: 3
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Rose0",
+            frames: this.anims.generateFrameNumbers("boutonRe", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Rose1",
+            frames: this.anims.generateFrameNumbers("boutonRe", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Rouge0",
+            frames: this.anims.generateFrameNumbers("boutonRo", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Rouge1",
+            frames: this.anims.generateFrameNumbers("boutonRo", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "bleu0",
+            frames: this.anims.generateFrameNumbers("boutonB", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "bleu1",
+            frames: this.anims.generateFrameNumbers("boutonB", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Oran0",
+            frames: this.anims.generateFrameNumbers("boutonO", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Oran1",
+            frames: this.anims.generateFrameNumbers("boutonO", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Jaune0",
+            frames: this.anims.generateFrameNumbers("boutonJ", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Jaune1",
+            frames: this.anims.generateFrameNumbers("boutonJ", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+
+          this.anims.create({
+            key: "V",
+            frames: this.anims.generateFrameNumbers("PorteVert", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+
+          this.anims.create({
+            key: "Vi",
+            frames: this.anims.generateFrameNumbers("PorteViolet", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+        }
+
+        update() {
+          if (cursors.left.isDown) {
+            direction = "left";
+            player.setVelocityX(-160);
+            player.anims.play("left", true);
+          } else if (cursors.right.isDown) {
+            direction = "right";
+            player.setVelocityX(160);
+            player.anims.play("right", true);
+          } else {
+            player.setVelocityX(0);
+          }
+
+          if (cursors.up.isDown && player.body.touching.down) {
+            player.setVelocityY(-450);
+          }
+
+          if (Phaser.Input.Keyboard.JustDown(boutonFeu)) {
+            tirer(player, direction);
+          }
+          if (J2Gauche.isDown) {
+            direction2 = "left";
+            player2.setVelocityX(-160);
+            player2.anims.play("Q", true);
+          } else if (J2Droite.isDown) {
+            direction2 = "right";
+            player2.setVelocityX(160);
+            player2.anims.play("D", true);
+          } else {
+            player2.setVelocityX(0);
+          }
+
+          if (J2Haut.isDown && player2.body.touching.down) {
+            player2.setVelocityY(-450);
+          }
+          if (Phaser.Input.Keyboard.JustDown(boutonFeu2)) {
+            tirer2(player2, direction2);
+          }
+          this.physics.add.overlap(
+            groupeBullets,
+            barriereV,
+            detruire,
+            null,
+            this
+          );
+
+          this.physics.add.overlap(player, CleVert, collectCle, null, this);
+          this.physics.add.overlap(player2, CleViolet, collectCle2, null, this);
+
+          if (player.possedeCle == true) {
+            this.physics.add.overlap(
+              player,
+              PorteVert,
+              openPorteVert,
+              null,
+              this
+            );
+          }
+
+          if (player2.possedeCle == true) {
+            this.physics.add.overlap(
+              player2,
+              PorteViolet,
+              openPorteViolet,
+              null,
+              this
+            );
+          }
+
+          if (PorteVert.ouvert == true && PorteViolet.ouvert == true) {
+            game.sound.stopAll();
+            this.scene.start("tuto3");
+          }
+        }
+      }
+
+      class tuto3 extends Phaser.Scene {
+        constructor() {
+          super({ key: "tuto3" });
+        }
+
+        preload() {
+          this.load.audio("persona", "musica.mp3");
+          this.load.image("fond", "fond.png");
+          this.load.spritesheet("barriereB", "barriere_grille_bleu.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("barriereJ", "barriere_grille_jaune.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("barriereRe", "barriere_grille_rouge.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("barriereRo", "barriere_grille_rose.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("barriereO", "barriere_grille_orange.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("fleche", "fleche.png", {
+            frameWidth: 48,
+            frameHeight: 32
+          });
+          this.load.spritesheet("levierJ", "levier_jaune.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierRe", "levier_rouge.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierB", "levier_bleu.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierO", "levier_orange.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierRo", "levier_rose.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("boutonJ", "bouton_jaune.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonRe", "bouton_rouge.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonB", "bouton_bleu.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonO", "bouton_orange.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonRo", "bouton_rose.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          //TEST SARAH POUR LES FLAMMES
+          this.load.spritesheet("feu", "feu_violet.png", {
+            frameWidth: 48,
+            frameHeight: 32
+          }); //FIN TEST
+          this.load.image("sol", "plateforme_sable.png");
+          this.load.image("plat", "plateforme_fine.png");
+          this.load.image("platM", "plateforme_millieu.png");
+          this.load.spritesheet("archer", "archer.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+          this.load.spritesheet("mage", "mage.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+          this.load.image("CleVert", "cle_vert.png");
+          this.load.image("CleViolet", "cle_violet.png");
+
+          this.load.spritesheet("PorteVert", "porte_vert.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+
+          this.load.spritesheet("PorteViolet", "porte_violet.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+
+          this.load.image("lave", "lave.png");
+        }
+
+        create() {
+          Jappui = false;
+          Bappui = false;
+          currentScene = this;
+          groupeBullets = this.physics.add.group();
+          music = game.sound.add("persona");
+          music.play();
+
+          boutonFeu = this.input.keyboard.addKey("down");
+          boutonFeu2 = this.input.keyboard.addKey("S");
+          J2Haut = this.input.keyboard.addKey("Z");
+          J2Gauche = this.input.keyboard.addKey("Q");
+          J2Droite = this.input.keyboard.addKey("D");
+
+          this.add.image(400, 300, "fond").setScale(0.59);
+
+          grilleV = this.physics.add.staticGroup();
+          grilleP = this.physics.add.staticGroup();
+          barriereV = this.physics.add.staticGroup();
+          barriereP = this.physics.add.staticGroup();
+          bouton = this.physics.add.staticGroup();
+
+          this.physics.add.collider(
+            groupeBullets,
+            barriereV,
+            detruire,
+            null,
+            this
+          );
+          this.physics.add.collider(
+            groupeBullets,
+            barriereP,
+            detruire,
+            null,
+            this
+          );
+
+          platforms = this.physics.add.staticGroup();
+          platforms.create(400, 580, "sol").setScale(2).refreshBody();
+          platforms.create(100, 375, "platM").setScale(2).refreshBody();
+          platforms.create(100, 184, "platM").setScale(2).refreshBody();
+
+          barriereJ = barriereV
+            .create(214, 470, "barriereJ", 1)
+            .setScale(3.1)
+            .refreshBody();
+          barriereB = barriereP
+            .create(214, 280, "barriereB", 4)
+            .setScale(3.1)
+            .refreshBody();
+
+          CleVert = this.physics.add.staticGroup();
+          CleVert.create(125, 450, "CleVert").setScale(2).refreshBody();
+
+          CleViolet = this.physics.add.staticGroup();
+          CleViolet.create(125, 250, "CleViolet").setScale(2).refreshBody();
+
+          PorteVert = this.physics.add.sprite(750, 325, "PorteVert");
+          PorteVert.setScale(1.25);
+          PorteVert.setCollideWorldBounds(true);
+          this.physics.add.collider(PorteVert, platforms);
+
+          lave = this.physics.add.staticGroup();
+          lave.create(500, 570, "lave").setScale(3).refreshBody();
+
+          PorteViolet = this.physics.add.sprite(675, 325, "PorteViolet");
+          PorteViolet.setScale(1.25);
+          PorteViolet.setCollideWorldBounds(true);
+          this.physics.add.collider(PorteViolet, platforms);
+
+          bouton = this.physics.add.staticGroup();
+          boutonbleu = bouton.create(320, 540, "boutonB", 0);
+          boutonjaune = bouton.create(125, 352, "boutonJ", 0);
+
+          player = this.physics.add.sprite(40, 250, "archer", 2);
+          player.setCollideWorldBounds(true);
+          // player.disableBody(true, true);
+          //this.physics.pause();
+          this.physics.add.collider(player, platforms);
+
+          cursors = this.input.keyboard.createCursorKeys();
+          this.anims.create({
+            key: "left",
+            frames: this.anims.generateFrameNumbers("archer", {
+              start: 0,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "right",
+            frames: this.anims.generateFrameNumbers("archer", {
+              start: 2,
+              end: 3
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          player2 = this.physics.add.sprite(40, 450, "mage", 2);
+          player2.setCollideWorldBounds(true);
+          this.physics.add.collider(player2, platforms);
+          this.physics.add.collider(player2, barriereV);
+          this.physics.add.collider(player, barriereP);
+          this.physics.add.collider(player2, grilleV);
+          this.physics.add.collider(player, grilleP);
+          this.physics.add.collider(
+            player,
+            boutonbleu,
+            bouton_appuiB,
+            null,
+            this
+          );
+          this.physics.add.collider(
+            player,
+            boutonjaune,
+            bouton_appuiJ,
+            null,
+            this
+          );
+          this.physics.add.collider(
+            player2,
+            boutonbleu,
+            bouton_appuiB,
+            null,
+            this
+          );
+          this.physics.add.collider(
+            player2,
+            boutonjaune,
+            bouton_appuiJ,
+            null,
+            this
+          );
+
+          this.anims.create({
+            key: "Q",
+            frames: this.anims.generateFrameNumbers("mage", {
+              start: 0,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "D",
+            frames: this.anims.generateFrameNumbers("mage", {
+              start: 2,
+              end: 3
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+
+          this.anims.create({
+            key: "V",
+            frames: this.anims.generateFrameNumbers("PorteVert", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+
+          this.anims.create({
+            key: "Vi",
+            frames: this.anims.generateFrameNumbers("PorteViolet", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+
+          this.physics.add.overlap(
+            groupeBullets,
+            barriereV,
+            detruire,
+            null,
+            this
+          );
+
+          this.physics.add.overlap(player, CleVert, collectCle, null, this);
+          this.physics.add.overlap(player2, CleViolet, collectCle2, null, this);
+          this.physics.add.overlap(player, lave, FallLave, null, this);
+          this.physics.add.overlap(player2, lave, FallLave, null, this);
+        }
+
+        update() {
+          if (cursors.left.isDown) {
+            direction = "left";
+            player.setVelocityX(-160);
+            player.anims.play("left", true);
+          } else if (cursors.right.isDown) {
+            direction = "right";
+            player.setVelocityX(160);
+            player.anims.play("right", true);
+          } else {
+            player.setVelocityX(0);
+          }
+
+          if (cursors.up.isDown && player.body.touching.down) {
+            player.setVelocityY(-450);
+          }
+
+          if (Phaser.Input.Keyboard.JustDown(boutonFeu)) {
+            tirer(player, direction);
+          }
+          if (J2Gauche.isDown) {
+            direction2 = "left";
+            player2.setVelocityX(-160);
+            player2.anims.play("Q", true);
+          } else if (J2Droite.isDown) {
+            direction2 = "right";
+            player2.setVelocityX(160);
+            player2.anims.play("D", true);
+          } else {
+            player2.setVelocityX(0);
+          }
+
+          if (J2Haut.isDown && player2.body.touching.down) {
+            player2.setVelocityY(-450);
+          }
+          if (Phaser.Input.Keyboard.JustDown(boutonFeu2)) {
+            tirer2(player2, direction2);
+          }
+
+          if (player.possedeCle == true) {
+            this.physics.add.overlap(
+              player,
+              PorteVert,
+              openPorteVert,
+              null,
+              this
+            );
+          }
+
+          if (player2.possedeCle == true) {
+            this.physics.add.overlap(
+              player2,
+              PorteViolet,
+              openPorteViolet,
+              null,
+              this
+            );
+          }
+
+          if (test == true) {
+            game.sound.stopAll();
+            test = false;
+            this.scene.restart("tuto3");
+          }
+
+          if (PorteVert.ouvert == true && PorteViolet.ouvert == true) {
+            game.sound.stopAll();
+            this.scene.start("tuto4");
+          }
+
+          etatGB(Bappui, barriereB);
+          etatGB(Jappui, barriereJ);
+        }
+      }
+
+      class tuto4 extends Phaser.Scene {
+        constructor() {
+          super({ key: "tuto4" });
+        }
+
+        preload() {
+          this.load.audio("persona", "musica.mp3");
+          this.load.image("fond", "fond.png");
+          this.load.spritesheet("barriereB", "barriere_grille_bleu.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("barriereJ", "barriere_grille_jaune.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("barriereRe", "barriere_grille_rouge.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("barriereRo", "barriere_grille_rose.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("barriereO", "barriere_grille_orange.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("fleche", "fleche.png", {
+            frameWidth: 48,
+            frameHeight: 32
+          });
+          this.load.spritesheet("levierJ", "levier_jaune.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierRe", "levier_rouge.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierB", "levier_bleu.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierO", "levier_orange.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierRo", "levier_rose.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("boutonJ", "bouton_jaune.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonRe", "bouton_rouge.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonB", "bouton_bleu.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonO", "bouton_orange.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonRo", "bouton_rose.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          //TEST SARAH POUR LES FLAMMES
+          this.load.spritesheet("feu", "feu_violet.png", {
+            frameWidth: 48,
+            frameHeight: 32
+          }); //FIN TEST
+          this.load.image("sol", "plateforme_sable.png");
+          this.load.image("plat", "plateforme_fine.png");
+          this.load.image("platM", "plateforme_millieu.png");
+          this.load.spritesheet("archer", "archer.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+          this.load.spritesheet("mage", "mage.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+          this.load.image("CleVert", "cle_vert.png");
+          this.load.image("CleViolet", "cle_violet.png");
+
+          this.load.spritesheet("PorteVert", "porte_vert.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+
+          this.load.spritesheet("PorteViolet", "porte_violet.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+
+          this.load.image("lave", "lave.png");
+        }
+
+        create() {
+          currentScene = this;
+          music = game.sound.add("persona");
+          music.play();
+          groupeBullets = this.physics.add.group();
+
+          boutonFeu = this.input.keyboard.addKey("down");
+          boutonFeu2 = this.input.keyboard.addKey("S");
+          J2Haut = this.input.keyboard.addKey("Z");
+          J2Gauche = this.input.keyboard.addKey("Q");
+          J2Droite = this.input.keyboard.addKey("D");
+
+          this.add.image(400, 300, "fond").setScale(0.59);
+
+          grilleV = this.physics.add.staticGroup();
+          grilleP = this.physics.add.staticGroup();
+          barriereV = this.physics.add.staticGroup();
+          barriereP = this.physics.add.staticGroup();
+          bouton = this.physics.add.staticGroup();
+
+          this.physics.add.collider(
+            groupeBullets,
+            barriereV,
+            detruire,
+            null,
+            this
+          );
+          this.physics.add.collider(
+            groupeBullets,
+            barriereP,
+            detruire,
+            null,
+            this
+          );
+
+          platforms = this.physics.add.staticGroup();
+          platforms.create(400, 580, "sol").setScale(2).refreshBody();
+          platforms.create(650, 375, "platM").setScale(3).refreshBody();
+          platforms.create(650, 177, "platM").setScale(3).refreshBody();
+
+          barrierevrouge = barriereV
+            .create(575, 474, "barriereRe", 1)
+            .setScale(2.9)
+            .refreshBody();
+          //barriereP.create(214, 280, "barriereB", 4).setScale(2.5).refreshBody();
+
+          CleVert = this.physics.add.staticGroup();
+          CleVert.create(525, 300, "CleVert").setScale(2).refreshBody();
+
+          CleViolet = this.physics.add.staticGroup();
+          CleViolet.create(650, 500, "CleViolet").setScale(2).refreshBody();
+
+          PorteVert = this.physics.add.sprite(750, 325, "PorteVert");
+          PorteVert.setScale(1.25);
+          PorteVert.setCollideWorldBounds(true);
+          this.physics.add.collider(PorteVert, platforms);
+
+          lave = this.physics.add.staticGroup();
+          //lave.create(500, 570, "lave").setScale(3).refreshBody();
+
+          PorteViolet = this.physics.add.sprite(675, 325, "PorteViolet");
+          PorteViolet.setScale(1.25);
+          PorteViolet.setCollideWorldBounds(true);
+          this.physics.add.collider(PorteViolet, platforms);
+
+          //bouton = this.physics.add.staticGroup();
+          //boutonbleu = bouton.create(320, 540, "boutonB", 0);
+          //boutonjaune = bouton.create(125, 352, "boutonJ", 0);
+
+          levier = this.physics.add.staticGroup();
+          levierrouge = levier
+            .create(720, 525, "levierRe", 1)
+            .setScale(3)
+            .refreshBody();
+
+          player = this.physics.add.sprite(90, 700, "archer", 2);
+          player.setCollideWorldBounds(true);
+          // player.disableBody(true, true);
+          //this.physics.pause();
+          this.physics.add.collider(player, platforms);
+
+          cursors = this.input.keyboard.createCursorKeys();
+          this.anims.create({
+            key: "left",
+            frames: this.anims.generateFrameNumbers("archer", {
+              start: 0,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "right",
+            frames: this.anims.generateFrameNumbers("archer", {
+              start: 2,
+              end: 3
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          player2 = this.physics.add.sprite(40, 450, "mage", 2);
+          player2.setCollideWorldBounds(true);
+          this.physics.add.collider(player2, platforms);
+          this.physics.add.collider(player2, barriereV);
+          this.physics.add.collider(player, barriereP);
+          this.physics.add.collider(player2, grilleV);
+          this.physics.add.collider(player, grilleP);
+          this.physics.add.collider(player, bouton);
+          this.physics.add.collider(player2, bouton);
+          this.physics.add.collider(player, levierrouge, actlevRe, null, this);
+          this.physics.add.collider(player2, levierrouge, actlevRe, null, this);
+
+          this.anims.create({
+            key: "Q",
+            frames: this.anims.generateFrameNumbers("mage", {
+              start: 0,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "D",
+            frames: this.anims.generateFrameNumbers("mage", {
+              start: 2,
+              end: 3
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Rose0",
+            frames: this.anims.generateFrameNumbers("boutonRe", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Rose1",
+            frames: this.anims.generateFrameNumbers("boutonRe", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Rouge0",
+            frames: this.anims.generateFrameNumbers("boutonRo", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Rouge1",
+            frames: this.anims.generateFrameNumbers("boutonRo", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "bleu0",
+            frames: this.anims.generateFrameNumbers("boutonB", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "bleu1",
+            frames: this.anims.generateFrameNumbers("boutonB", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Oran0",
+            frames: this.anims.generateFrameNumbers("boutonO", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Oran1",
+            frames: this.anims.generateFrameNumbers("boutonO", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Jaune0",
+            frames: this.anims.generateFrameNumbers("boutonJ", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Jaune1",
+            frames: this.anims.generateFrameNumbers("boutonJ", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+
+          this.anims.create({
+            key: "V",
+            frames: this.anims.generateFrameNumbers("PorteVert", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+
+          this.anims.create({
+            key: "Vi",
+            frames: this.anims.generateFrameNumbers("PorteViolet", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+        }
+
+        update() {
+          if (PorteVert.ouvert == true && PorteViolet.ouvert == true) {
+            game.sound.stopAll();
+            this.scene.start("tuto5");
+            return;
+          }
+
+          if (cursors.left.isDown) {
+            direction = "left";
+            player.setVelocityX(-160);
+            player.anims.play("left", true);
+          } else if (cursors.right.isDown) {
+            direction = "right";
+            player.setVelocityX(160);
+            player.anims.play("right", true);
+          } else {
+            player.setVelocityX(0);
+          }
+
+          if (cursors.up.isDown && player.body.touching.down) {
+            player.setVelocityY(-450);
+          }
+
+          if (Phaser.Input.Keyboard.JustDown(boutonFeu)) {
+            tirer(player, direction);
+          }
+          if (J2Gauche.isDown) {
+            direction2 = "left";
+            player2.setVelocityX(-160);
+            player2.anims.play("Q", true);
+          } else if (J2Droite.isDown) {
+            direction2 = "right";
+            player2.setVelocityX(160);
+            player2.anims.play("D", true);
+          } else {
+            player2.setVelocityX(0);
+          }
+
+          if (J2Haut.isDown && player2.body.touching.down) {
+            player2.setVelocityY(-450);
+          }
+          if (Phaser.Input.Keyboard.JustDown(boutonFeu2)) {
+            tirer2(player2, direction2);
+          }
+          this.physics.add.overlap(
+            groupeBullets,
+            barriereV,
+            detruire,
+            null,
+            this
+          );
+
+          this.physics.add.overlap(player, CleVert, collectCle, null, this);
+          this.physics.add.overlap(player2, CleViolet, collectCle2, null, this);
+
+          if (player.possedeCle == true) {
+            this.physics.add.overlap(
+              player,
+              PorteVert,
+              openPorteVert,
+              null,
+              this
+            );
+          }
+
+          if (player2.possedeCle == true) {
+            this.physics.add.overlap(
+              player2,
+              PorteViolet,
+              openPorteViolet,
+              null,
+              this
+            );
+          }
+
+          this.physics.add.overlap(player, lave, FallLave, null, this);
+          this.physics.add.overlap(player2, lave, FallLave, null, this);
+
+          if (levRepos == true) {
+            barrierevrouge.setPosition(575, 275).refreshBody();
+          } else if (levRepos == false) {
+            barrierevrouge.setPosition(575, 474).refreshBody();
+          }
+        }
+      }
+
+      class tuto5 extends Phaser.Scene {
+        constructor() {
+          super({ key: "tuto5" });
+        }
+
+        preload() {
+          this.load.audio("persona", "musica.mp3");
+          this.load.image("fond", "fond.png");
+          this.load.spritesheet("barriereB", "barriere_grille_bleu.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("barriereJ", "barriere_grille_jaune.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("barriereRe", "barriere_grille_rouge.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("barriereRo", "barriere_grille_rose.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("barriereO", "barriere_grille_orange.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("fleche", "fleche.png", {
+            frameWidth: 48,
+            frameHeight: 32
+          });
+          this.load.spritesheet("levierJ", "levier_jaune.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierRe", "levier_rouge.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierB", "levier_bleu.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierO", "levier_orange.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierRo", "levier_rose.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("boutonJ", "bouton_jaune.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonRe", "bouton_rouge.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonB", "bouton_bleu.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonO", "bouton_orange.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonRo", "bouton_rose.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          //TEST SARAH POUR LES FLAMMES
+          this.load.spritesheet("feu", "feu_violet.png", {
+            frameWidth: 48,
+            frameHeight: 32
+          }); //FIN TEST
+          this.load.image("sol", "plateforme_sable.png");
+          this.load.image("plat", "plateforme_fine.png");
+          this.load.image("platM", "plateforme_millieu.png");
+          this.load.spritesheet("archer", "archer.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+          this.load.spritesheet("mage", "mage.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+          this.load.image("CleVert", "cle_vert.png");
+          this.load.image("CleViolet", "cle_violet.png");
+
+          this.load.spritesheet("PorteVert", "porte_vert.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+
+          this.load.spritesheet("PorteViolet", "porte_violet.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+          this.load.spritesheet("Hellfire", "HellFire.png", {
+            frameWidth: 48,
+            frameHeight: 32
+          });
+
+          this.load.image("lave", "lave.png");
+          this.load.image("skull", "skull.png");
+          this.load.image("skullD", "skullD.png");
+        }
+
+        create() {
+          Jappui = false;
+          currentScene = this;
+          groupeBullets = this.physics.add.group();
+          groupeBulletsM = this.physics.add.group();
+          music = game.sound.add("persona");
+          music.play();
+
+          boutonFeu = this.input.keyboard.addKey("down");
+          boutonFeu2 = this.input.keyboard.addKey("S");
+          J2Haut = this.input.keyboard.addKey("Z");
+          J2Gauche = this.input.keyboard.addKey("Q");
+          J2Droite = this.input.keyboard.addKey("D");
+
+          this.add.image(400, 300, "fond").setScale(0.59);
+
+          grilleV = this.physics.add.staticGroup();
+          grilleP = this.physics.add.staticGroup();
+          barriereV = this.physics.add.staticGroup();
+          barriereP = this.physics.add.staticGroup();
+          bouton = this.physics.add.staticGroup();
+
+          this.physics.add.collider(
+            groupeBullets,
+            barriereV,
+            detruire,
+            null,
+            this
+          );
+          this.physics.add.collider(
+            groupeBullets,
+            barriereP,
+            detruire,
+            null,
+            this
+          );
+
+          platforms = this.physics.add.staticGroup();
+          platforms.create(400, 580, "sol").setScale(2).refreshBody();
+          platforms.create(755, 375, "platM").setScale(3).refreshBody();
+          platforms.create(100, 184, "platM").setScale(2).refreshBody();
+          platforms.create(30, 375, "platM").setScale(3).refreshBody();
+          barriereP
+            .create(575, 474, "barriereRe", 0)
+            .setScale(2.9)
+            .refreshBody();
+          barriereV
+            .create(210, 474, "barriereRe", 1)
+            .setScale(2.9)
+            .refreshBody();
+
+          grilleP.create(650, 474, "barriereRe", 2).setScale(2.9).refreshBody();
+          grilleV.create(135, 474, "barriereRe", 3).setScale(2.9).refreshBody();
+
+          CleVert = this.physics.add.staticGroup();
+          CleVert.create(20, 500, "CleVert").setScale(2).refreshBody();
+
+          CleViolet = this.physics.add.staticGroup();
+          CleViolet.create(775, 500, "CleViolet").setScale(2).refreshBody();
+
+          PorteVert = this.physics.add.sprite(750, 325, "PorteVert");
+          PorteVert.setScale(1.25);
+          PorteVert.setCollideWorldBounds(true);
+          this.physics.add.collider(PorteVert, platforms);
+
+          PorteViolet = this.physics.add.sprite(675, 325, "PorteViolet");
+          PorteViolet.setScale(1.25);
+          PorteViolet.setCollideWorldBounds(true);
+          this.physics.add.collider(PorteViolet, platforms);
+
+          monster = this.physics.add.image(700, 450, "skullD");
+          monster2 = this.physics.add.image(60, 450, "skull");
+          this.physics.add.collider(monster, platforms);
+          this.physics.add.collider(monster2, platforms);
+
+          player = this.physics.add.sprite(90, 50, "archer", 2);
+          player.setCollideWorldBounds(true);
+          this.physics.add.collider(player, platforms);
+
+          cursors = this.input.keyboard.createCursorKeys();
+          this.anims.create({
+            key: "left",
+            frames: this.anims.generateFrameNumbers("archer", {
+              start: 0,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "right",
+            frames: this.anims.generateFrameNumbers("archer", {
+              start: 2,
+              end: 3
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          player2 = this.physics.add.sprite(40, 50, "mage", 2);
+          player2.setCollideWorldBounds(true);
+          this.physics.add.collider(player2, platforms);
+          this.physics.add.collider(player2, barriereV);
+          this.physics.add.collider(player, barriereP);
+          this.physics.add.collider(player2, grilleV);
+          this.physics.add.collider(player, grilleP);
+          this.physics.add.collider(player, bouton);
+          this.physics.add.collider(player2, bouton);
+          this.physics.add.collider(player, monster2, gameover, null, this);
+          this.physics.add.collider(player2, monster, gameover, null, this);
+
+          this.anims.create({
+            key: "Q",
+            frames: this.anims.generateFrameNumbers("mage", {
+              start: 0,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "D",
+            frames: this.anims.generateFrameNumbers("mage", {
+              start: 2,
+              end: 3
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Rose0",
+            frames: this.anims.generateFrameNumbers("boutonRe", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Rose1",
+            frames: this.anims.generateFrameNumbers("boutonRe", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Rouge0",
+            frames: this.anims.generateFrameNumbers("boutonRo", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Rouge1",
+            frames: this.anims.generateFrameNumbers("boutonRo", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "bleu0",
+            frames: this.anims.generateFrameNumbers("boutonB", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "bleu1",
+            frames: this.anims.generateFrameNumbers("boutonB", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Oran0",
+            frames: this.anims.generateFrameNumbers("boutonO", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Oran1",
+            frames: this.anims.generateFrameNumbers("boutonO", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Jaune0",
+            frames: this.anims.generateFrameNumbers("boutonJ", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Jaune1",
+            frames: this.anims.generateFrameNumbers("boutonJ", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+
+          this.anims.create({
+            key: "V",
+            frames: this.anims.generateFrameNumbers("PorteVert", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+
+          this.anims.create({
+            key: "Vi",
+            frames: this.anims.generateFrameNumbers("PorteViolet", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+
+          this.physics.add.overlap(player, CleVert, collectCle, null, this);
+          this.physics.add.overlap(player2, CleViolet, collectCle2, null, this);
+
+          monTime = currentScene.time.addEvent({
+            delay: 1500,
+            callback: function () {
+              tirer3(monster);
+            },
+            callbackScope: this,
+            loop: true
+          });
+          this.physics.add.overlap(groupeBullets, monster, hit, null, this);
+          this.physics.add.overlap(groupeBullets, monster2, hit2, null, this);
+          this.physics.add.overlap(
+            groupeBulletsM,
+            player,
+            gameover,
+            null,
+            this
+          );
+          this.physics.add.overlap(
+            groupeBulletsM,
+            player2,
+            gameover,
+            null,
+            this
+          );
+          this.physics.add.collider(
+            groupeBulletsM,
+            barriereV,
+            detruire,
+            null,
+            this
+          );
+
+          this.physics.add.collider(
+            groupeBulletsM,
+            barriereP,
+            detruire,
+            null,
+            this
+          );
+
+          this.physics.add.overlap(
+            groupeBulletsM,
+            barriereV,
+            detruire,
+            null,
+            this
+          );
+
+          this.physics.add.overlap(
+            groupeBulletsM,
+            barriereP,
+            detruire,
+            null,
+            this
+          );
+
+          monTime2 = currentScene.time.addEvent({
+            delay: 1500,
+            callback: function () {
+              tirer4(monster2);
+            },
+            callbackScope: this,
+            loop: true
+          });
+        }
+
+        update() {
+          if (cursors.left.isDown) {
+            direction = "left";
+            player.setVelocityX(-160);
+            player.anims.play("left", true);
+          } else if (cursors.right.isDown) {
+            direction = "right";
+            player.setVelocityX(160);
+            player.anims.play("right", true);
+          } else {
+            player.setVelocityX(0);
+          }
+
+          if (cursors.up.isDown && player.body.touching.down) {
+            player.setVelocityY(-450);
+          }
+
+          if (Phaser.Input.Keyboard.JustDown(boutonFeu)) {
+            tirer(player, direction);
+          }
+          if (J2Gauche.isDown) {
+            direction2 = "left";
+            player2.setVelocityX(-160);
+            player2.anims.play("Q", true);
+          } else if (J2Droite.isDown) {
+            direction2 = "right";
+            player2.setVelocityX(160);
+            player2.anims.play("D", true);
+          } else {
+            player2.setVelocityX(0);
+          }
+
+          if (J2Haut.isDown && player2.body.touching.down) {
+            player2.setVelocityY(-450);
+          }
+          if (Phaser.Input.Keyboard.JustDown(boutonFeu2)) {
+            tirer2(player2, direction2);
+          }
+          this.physics.add.overlap(
+            groupeBullets,
+            barriereV,
+            detruire,
+            null,
+            this
+          );
+
+          if (player.possedeCle == true) {
+            this.physics.add.overlap(
+              player,
+              PorteVert,
+              openPorteVert,
+              null,
+              this
+            );
+          }
+
+          if (player2.possedeCle == true) {
+            this.physics.add.overlap(
+              player2,
+              PorteViolet,
+              openPorteViolet,
+              null,
+              this
+            );
+          }
+
+          if (PorteVert.ouvert == true && PorteViolet.ouvert == true) {
+            game.sound.stopAll();
+            this.scene.start("menu");
+          }
+
+          if (test2 == true) {
+            game.sound.stopAll();
+            test2 = false;
+            this.scene.restart();
+          }
+        }
+      }
+
+      class niveau1 extends Phaser.Scene {
+        constructor() {
+          super({ key: "niveau1" });
+        }
+
+        preload() {
+          // on ajoute nos images dans le code et on leur donne une clé pour pouvoir les appeler.
+          this.load.audio("ult", "candle.mp3");
+          this.load.image("fond", "fond.png");
+          this.load.spritesheet("barriereB", "barriere_grille_bleu.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("barriereJ", "barriere_grille_jaune.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("barriereRe", "barriere_grille_rouge.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("barriereRo", "barriere_grille_rose.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("barriereO", "barriere_grille_orange.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("fleche", "fleche.png", {
+            frameWidth: 48,
+            frameHeight: 32
+          });
+          this.load.spritesheet("levierJ", "levier_jaune.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierRe", "levier_rouge.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierB", "levier_bleu.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierO", "levier_orange.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierRo", "levier_rose.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("boutonJ", "bouton_jaune.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonRe", "bouton_rouge.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonB", "bouton_bleu.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonO", "bouton_orange.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonRo", "bouton_rose.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("feu", "feu_violet.png", {
+            frameWidth: 48,
+            frameHeight: 32
+          });
+          this.load.image("sol", "plateforme_sable.png");
+          this.load.image("plat", "plateforme_fine.png");
+          this.load.image("platM", "plateforme_millieu.png");
+          this.load.spritesheet("archer", "archer.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+          this.load.spritesheet("mage", "mage.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+          this.load.image("CleVert", "cle_vert.png");
+          this.load.image("CleViolet", "cle_violet.png");
+
+          this.load.spritesheet("PorteVert", "porte_vert.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+
+          this.load.spritesheet("PorteViolet", "porte_violet.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+
+          this.load.image("lave", "lave.png"); //on ajoute l'image de la lave
+
+          this.load.image("skull", "skull.png");
+          this.load.image("skullD", "skullD.png");
+          this.load.spritesheet("Hellfire", "HellFire.png", {
+            frameWidth: 48,
+            frameHeight: 32
+          });
+        }
+
+        create() {
+          // on initialise nos variables à false pour que le niveau soit bien agencé même lorsque l'on recommence.
+          music = game.sound.add("ult");
+          music.play();
+          Oappui = false;
+          Bappui = false;
+          levRepos = false;
+          levJpos = false;
+          currentScene = this;
+          groupeBullets = this.physics.add.group(); // La ligne de code qui soummet à la gravité un élément et nous permet d'interragir avec
+          groupeBulletsM = this.physics.add.group();
+
+          boutonFeu = this.input.keyboard.addKey("down"); // ajoute une commande à une touche du clavier
+          boutonFeu2 = this.input.keyboard.addKey("S");
+          J2Haut = this.input.keyboard.addKey("Z");
+          J2Gauche = this.input.keyboard.addKey("Q");
+          J2Droite = this.input.keyboard.addKey("D");
+
+          this.add.image(400, 300, "fond").setScale(0.59); // on ajoute le fond de notre niveau
+
+          grilleV = this.physics.add.staticGroup(); // Donne une physique aux éléments qui permet d'interragir avec eux mais la gravité n'a pas d'effet sur eux
+          grilleP = this.physics.add.staticGroup();
+          barriereV = this.physics.add.staticGroup();
+          barriereP = this.physics.add.staticGroup();
+          bouton = this.physics.add.staticGroup();
+
+          this.physics.add.collider(
+            //permet d'empecher les balles de
+            // traverser la barriere
+            groupeBullets,
+            barriereV,
+            detruire,
+            null,
+            this
+          );
+          this.physics.add.collider(
+            groupeBullets,
+            barriereP,
+            detruire,
+            null,
+            this
+          );
+          this.physics.add.collider(
+            groupeBulletsM,
+            barriereV,
+            detruire,
+            null,
+            this
+          );
+          this.physics.add.collider(
+            groupeBulletsM,
+            barriereP,
+            detruire,
+            null,
+            this
+          );
+          this.physics.add.overlap(
+            groupeBulletsM,
+            barriereV,
+            detruire,
+            null,
+            this
+          );
+          this.physics.add.overlap(
+            groupeBulletsM,
+            barriereP,
+            detruire,
+            null,
+            this
+          );
+
+          platforms = this.physics.add.staticGroup(); // on crée un groupe statique pour nos barrières, pour qu'elles ne soient pas soumise à la gravité.
+          platforms.create(400, 580, "sol").setScale(2).refreshBody(); // on ajoute nos plateformes à la place où on les veut.
+          platforms.create(0, 475, "plat").setScale(2).refreshBody();
+          platforms.create(533, 317, "plat").setScale(2).refreshBody();
+          platforms.create(133, 159, "plat").setScale(2).refreshBody();
+          grillevbleu = grilleV
+            .create(390, 396, "barriereB", 3)
+            .setScale(2.25)
+            .refreshBody();
+          barriereporange = barriereP
+            .create(150, 396, "barriereO", 0)
+            .setScale(2.25)
+            .refreshBody();
+
+          grilleprouge = grilleP
+            .create(270, 238, "barriereRe", 2)
+            .setScale(2.25)
+            .refreshBody();
+
+          barrierevjaune = barriereV
+            .create(480, 238, "barriereJ", 1)
+            .setScale(2.25)
+            .refreshBody();
+
+          CleVert = this.physics.add.staticGroup(); // on crée un groupe statique pour nos clés pour pas qu'elles soient soumise à la gravité.
+          CleVert.create(775, 270, "CleVert").setScale(2).refreshBody(); // on place la clé verte sur la map
+
+          CleViolet = this.physics.add.staticGroup(); // on crée un groupe statique pour nos clés pour pas qu'elles soient soumise à la gravité.
+          CleViolet.create(775, 525, "CleViolet").setScale(2).refreshBody(); // on place la clé violette sur la map
+
+          PorteVert = this.physics.add.sprite(125, 25, "PorteVert"); // on place la porte verte sur la map
+          PorteVert.setScale(1.25); // on agrandit notre porte pour qu'elle soit à la bonne taille
+          PorteVert.setCollideWorldBounds(true);
+          this.physics.add.collider(PorteVert, platforms); // la porte ne peut pas traverser la plateforme
+
+          lave = this.physics.add.staticGroup(); // la lave n'est pas soumis à la gravité
+          lave.create(600, 563, "lave").setScale(2).refreshBody(); // on place la lave sur la map
+
+          PorteViolet = this.physics.add.sprite(50, 25, "PorteViolet"); // on place la porte violette sur la map
+          PorteViolet.setScale(1.25); // on agrandit notre porte pour qu'elle soit à la bonne pièce
+          PorteViolet.setCollideWorldBounds(true);
+          this.physics.add.collider(PorteViolet, platforms); // la porte ne peut pas traverser la plateformes
+
+          monster = this.physics.add.image(675, 238, "skullD"); // on crée notre
+          // skull et on le place où l'on veut sur la map.
+          this.physics.add.collider(monster, platforms); //les monstres ne
+          //passe pas à travers la plateformes
+
+          boutonbleu = bouton.create(290, 447, "boutonB", 0);
+          boutonOrange = bouton.create(90, 447, "boutonO", 0);
+
+          levier = this.physics.add.staticGroup();
+          levierrouge = levier
+            .create(620, 273, "levierRe", 1)
+            .setScale(3)
+            .refreshBody();
+          levierjaune = levier
+            .create(175, 273, "levierJ", 1)
+            .setScale(3)
+            .refreshBody();
+          player = this.physics.add.sprite(90, 510, "archer", 2);
+          player.setCollideWorldBounds(true);
+
+          this.physics.add.collider(player, platforms);
+
+          cursors = this.input.keyboard.createCursorKeys();
+          this.anims.create({
+            key: "left",
+            frames: this.anims.generateFrameNumbers("archer", {
+              start: 0,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "right",
+            frames: this.anims.generateFrameNumbers("archer", {
+              start: 2,
+              end: 3
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          player2 = this.physics.add.sprite(40, 510, "mage", 2);
+          player2.setCollideWorldBounds(true);
+          this.physics.add.collider(player2, platforms);
+          this.physics.add.collider(player2, barriereV); // empeche le personnage de traverser
+          // la barriere qui n'est pas de sa couleur
+          this.physics.add.collider(player, barriereP);
+          this.physics.add.collider(player2, grilleV);
+          this.physics.add.collider(player, grilleP); // empeche le personnage de traverser
+          // la grille qui n'est pas de sa couleur
+          this.physics.add.collider(player, levierjaune, actlevJ, null, this);
+          this.physics.add.collider(player2, levierjaune, actlevJ, null, this);
+          this.physics.add.collider(player, levierrouge, actlevRe, null, this);
+          this.physics.add.collider(player2, levierrouge, actlevRe, null, this);
+
+          this.physics.add.collider(
+            player,
+            boutonbleu,
+            bouton_appuiB,
+            null,
+            this
+          );
+          this.physics.add.collider(
+            player2,
+            boutonbleu,
+            bouton_appuiB,
+            null,
+            this
+          );
+          this.physics.add.collider(
+            player,
+            boutonOrange,
+            bouton_appuiO,
+            null,
+            this
+          );
+          this.physics.add.collider(
+            player2,
+            boutonOrange,
+            bouton_appuiO,
+            null,
+            this
+          );
+          this.anims.create({
+            key: "Q",
+            frames: this.anims.generateFrameNumbers("mage", {
+              start: 0,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "D",
+            frames: this.anims.generateFrameNumbers("mage", {
+              start: 2,
+              end: 3
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Rose0",
+            frames: this.anims.generateFrameNumbers("boutonRe", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Rose1",
+            frames: this.anims.generateFrameNumbers("boutonRe", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Rouge0",
+            frames: this.anims.generateFrameNumbers("boutonRo", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Rouge1",
+            frames: this.anims.generateFrameNumbers("boutonRo", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "bleu0",
+            frames: this.anims.generateFrameNumbers("boutonB", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "bleu1",
+            frames: this.anims.generateFrameNumbers("boutonB", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Oran0",
+            frames: this.anims.generateFrameNumbers("boutonO", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Oran1",
+            frames: this.anims.generateFrameNumbers("boutonO", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Jaune0",
+            frames: this.anims.generateFrameNumbers("boutonJ", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Jaune1",
+            frames: this.anims.generateFrameNumbers("boutonJ", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+
+          this.anims.create({
+            //on crée une animation pour ouvrir la porte verte
+            key: "V",
+            frames: this.anims.generateFrameNumbers("PorteVert", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+
+          this.anims.create({
+            // on crée une animation pour ouvrir la porte violette
+            key: "Vi",
+            frames: this.anims.generateFrameNumbers("PorteViolet", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.physics.add.overlap(player, CleVert, collectCle, null, this); // on fait un appel à la fonction collectclé vert pour que l'archer collect sa clé quand il passe dessus.
+          this.physics.add.overlap(player2, CleViolet, collectCle2, null, this); // on fait un appel à la fonction collectclé vert pour que le mage collect sa clé quand il passe dessus.
+          this.physics.add.overlap(player, lave, FallLave, null, this); // on fait un appel à la fonction FallLave pour que notre niveau recommence lorsque l'archer tombe dans la lave
+          this.physics.add.overlap(player2, lave, FallLave, null, this); // on fait un appel à la fonction FallLave pour que notre niveau recommence lorsque le mage tombe dans la lave
+          this.physics.add.collider(player, monster, gameover, null, this); // on fait appel à gameover pour recommencer le niveau si contact avec le monstre
+          this.physics.add.collider(player2, monster, gameover, null, this);
+
+          monTime = currentScene.time.addEvent({
+            // Bout de code qui permet aux monstres
+            // de tirer à un intervalle de temps défini
+            delay: 1500,
+            callback: function () {
+              tirer3(monster);
+            },
+            callbackScope: this,
+            loop: true
+          });
+          this.physics.add.overlap(groupeBullets, monster, hit, null, this);
+          this.physics.add.overlap(
+            groupeBulletsM,
+            player,
+            gameover,
+            null,
+            this
+          );
+          this.physics.add.overlap(
+            groupeBulletsM,
+            player2,
+            gameover,
+            null,
+            this
+          );
+        }
+
+        update() {
+          if (cursors.left.isDown) {
+            direction = "left";
+            player.setVelocityX(-160);
+            player.anims.play("left", true);
+          } else if (cursors.right.isDown) {
+            direction = "right";
+            player.setVelocityX(160);
+            player.anims.play("right", true);
+          } else {
+            player.setVelocityX(0);
+          }
+
+          if (cursors.up.isDown && player.body.touching.down) {
+            player.setVelocityY(-450);
+          }
+
+          if (Phaser.Input.Keyboard.JustDown(boutonFeu)) {
+            tirer(player, direction);
+          }
+          if (J2Gauche.isDown) {
+            direction2 = "left";
+            player2.setVelocityX(-160);
+            player2.anims.play("Q", true);
+          } else if (J2Droite.isDown) {
+            direction2 = "right";
+            player2.setVelocityX(160);
+            player2.anims.play("D", true);
+          } else {
+            player2.setVelocityX(0);
+          }
+
+          if (J2Haut.isDown && player2.body.touching.down) {
+            player2.setVelocityY(-450);
+          }
+          if (Phaser.Input.Keyboard.JustDown(boutonFeu2)) {
+            tirer2(player2, direction2);
+          }
+
+          etatGB(Bappui, grillevbleu); //(Voir fonction etatGB plus bas)
+          etatGB(Oappui, barriereporange);
+
+          if (PorteVert.ouvert == true && PorteViolet.ouvert == true) {
+            game.sound.stopAll();
+            this.scene.start("niveau2"); //lorsque les 2 portes sont ouvertes on lance le niveau suivant
+          }
+
+          if (levJpos == true) {
+            // par rapport à la valeur true ou false du levier, place la barrière ou la grille
+            //à une position définie (Voir fonction actlev plus bas)
+            barrierevjaune.setPosition(480, 70).setScale(2.65).refreshBody();
+          } else if (levJpos == false) {
+            barrierevjaune.setPosition(480, 238).setScale(2.25).refreshBody();
+          }
+
+          if (levRepos == true) {
+            grilleprouge.setPosition(270, 70).setScale(2.65).refreshBody();
+          } else if (levRepos == false) {
+            grilleprouge.setPosition(270, 238).setScale(2.25).refreshBody();
+          }
+
+          if (player.possedeCle == true) {
+            this.physics.add.overlap(
+              player,
+              PorteVert,
+              openPorteVert,
+              null,
+              this
+            );
+          } // si le joueur vert possède sa clé et passe devant sa porte, alors celle-ci s'ouvre
+
+          if (player2.possedeCle == true) {
+            this.physics.add.overlap(
+              player2,
+              PorteViolet,
+              openPorteViolet,
+              null,
+              this
+            );
+          } // si le joueur violet possède sa clé et passe devant sa porte, alors celle-ci s'ouvre
+
+          if (test == true) {
+            // lorsque l'on tombe dans la lave, la fonction FallLave passe la variable test à True
+            game.sound.stopAll();
+            test = false; //on remet la variable à false
+            this.scene.restart("niveau1"); // la scène recommence
+          }
+
+          if (test2 == true) {
+            // lorsqu'il y a contact entre un joueur et un skull, la fonction gameOver passe la variable test2 à True
+            game.sound.stopAll();
+            test2 = false; //on remet la variable à false
+            this.scene.restart("niveau1"); //la scène recommence
+          }
+        }
+      }
+
+      class niveau2 extends Phaser.Scene {
+        constructor() {
+          super({ key: "niveau2" });
+        }
+
+        preload() {
+          this.load.audio("fun", "Les_funambules.mp3");
+          this.load.image("fond", "fond.png");
+          this.load.spritesheet("barriereB", "barriere_grille_bleu.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet(
+            "barriereJT",
+            "barriere_grille_jaune_tourner.png",
+            {
+              frameWidth: 51,
+              frameHeight: 23
+            }
+          );
+          this.load.spritesheet("barriereRe", "barriere_grille_rouge.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("barriereRo", "barriere_grille_rose.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("barriereO", "barriere_grille_orange.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("fleche", "fleche.png", {
+            frameWidth: 48,
+            frameHeight: 32
+          });
+          this.load.spritesheet("levierJ", "levier_jaune.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierRe", "levier_rouge.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierB", "levier_bleu.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierO", "levier_orange.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierRo", "levier_rose.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("boutonJ", "bouton_jaune.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonRe", "bouton_rouge.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonB", "bouton_bleu.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonO", "bouton_orange.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonRo", "bouton_rose.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          //TEST SARAH POUR LES FLAMMES
+          this.load.spritesheet("feu", "feu_violet.png", {
+            frameWidth: 48,
+            frameHeight: 32
+          }); //FIN TEST
+          this.load.image("sol", "plateforme_sable.png");
+          this.load.image("plat", "plateforme_fine.png");
+          this.load.image("platM", "plateforme_millieu.png");
+          this.load.spritesheet("archer", "archer.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+          this.load.spritesheet("mage", "mage.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+          this.load.image("CleVert", "cle_vert.png");
+          this.load.image("CleViolet", "cle_violet.png");
+
+          this.load.spritesheet("PorteVert", "porte_vert.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+
+          this.load.spritesheet("PorteViolet", "porte_violet.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+
+          this.load.image("lave", "lave.png");
+
+          this.load.image("skull", "skull.png");
+          this.load.image("skullD", "skullD.png");
+          this.load.spritesheet("Hellfire", "HellFire.png", {
+            frameWidth: 48,
+            frameHeight: 32
+          });
+        }
+
+        create() {
+          Oappui = false;
+          Bappui = false;
+          reappui = false;
+          levRopos = false;
+          levJpos = false;
+          levBpos = false;
+          currentScene = this;
+          groupeBullets = this.physics.add.group();
+          groupeBulletsM = this.physics.add.group();
+          music = game.sound.add("fun");
+          music.play();
+          boutonFeu = this.input.keyboard.addKey("down");
+          boutonFeu2 = this.input.keyboard.addKey("S");
+          J2Haut = this.input.keyboard.addKey("Z");
+          J2Gauche = this.input.keyboard.addKey("Q");
+          J2Droite = this.input.keyboard.addKey("D");
+
+          this.add.image(400, 300, "fond").setScale(0.59);
+
+          grilleV = this.physics.add.staticGroup();
+          grilleP = this.physics.add.staticGroup();
+          barriereV = this.physics.add.staticGroup();
+          barriereP = this.physics.add.staticGroup();
+          bouton = this.physics.add.staticGroup();
+
+          this.physics.add.collider(
+            groupeBullets,
+            barriereV,
+            detruire,
+            null,
+            this
+          );
+          this.physics.add.collider(
+            groupeBullets,
+            barriereP,
+            detruire,
+            null,
+            this
+          );
+          this.physics.add.collider(
+            groupeBulletsM,
+            barriereV,
+            detruire,
+            null,
+            this
+          );
+          this.physics.add.collider(
+            groupeBulletsM,
+            barriereP,
+            detruire,
+            null,
+            this
+          );
+          this.physics.add.overlap(
+            groupeBulletsM,
+            barriereV,
+            detruire,
+            null,
+            this
+          );
+          this.physics.add.overlap(
+            groupeBulletsM,
+            barriereP,
+            detruire,
+            null,
+            this
+          );
+
+          platforms = this.physics.add.staticGroup();
+          platforms.create(400, 615, "sol").setScale(2).refreshBody();
+          platforms.create(0, 475, "plat").setScale(1.5).refreshBody();
+          platforms.create(813, 475, "plat").setScale(1.5).refreshBody();
+          platforms.create(0, 327, "plat").setScale(1.5).refreshBody();
+          platforms.create(100, 159, "plat").setScale(1.5).refreshBody();
+          platforms.create(933, 159, "plat").setScale(1.5).refreshBody();
+          grillevbleu = grilleV
+            .create(200, 538, "barriereB", 3)
+            .setScale(1.75)
+            .refreshBody();
+          barrierevrose = barriereV
+            .create(350, 75, "barriereRo", 1)
+            .setScale(2.75)
+            .refreshBody();
+
+          barriereprouge = barriereP
+            .create(550, 538, "barriereRe", 0)
+            .setScale(1.75)
+            .refreshBody();
+
+          barrierevjaune = barriereV
+            .create(8, 538, "barriereJT", 1)
+            .setScale(2.25)
+            .refreshBody();
+
+          CleVert = this.physics.add.staticGroup();
+          CleVert.create(775, 550, "CleVert").setScale(2).refreshBody();
+
+          CleViolet = this.physics.add.staticGroup();
+          CleViolet.create(30, 110, "CleViolet").setScale(2).refreshBody();
+
+          PorteVert = this.physics.add.sprite(225, 200, "PorteVert");
+          PorteVert.setScale(1.25);
+          PorteVert.setCollideWorldBounds(true);
+          this.physics.add.collider(PorteVert, platforms);
+
+          lave = this.physics.add.staticGroup();
+          //lave.create(600, 563, "lave").setScale(2).refreshBody();
+
+          PorteViolet = this.physics.add.sprite(160, 200, "PorteViolet");
+          PorteViolet.setScale(1.25);
+          PorteViolet.setCollideWorldBounds(true);
+          this.physics.add.collider(PorteViolet, platforms);
+
+          monster = this.physics.add.image(675, 238, "skullD");
+          this.physics.add.collider(monster, platforms);
+          monster2 = this.physics.add.image(675, 500, "skullD");
+          this.physics.add.collider(monster2, platforms);
+          monster3 = this.physics.add.image(80, 50, "skull");
+          this.physics.add.collider(monster3, platforms);
+
+          boutonrouge = bouton.create(50, 302, "boutonRe", 0);
+
+          levier = this.physics.add.staticGroup();
+          levierrose = levier
+            .create(620, 560, "levierRo", 1)
+            .setScale(3)
+            .refreshBody();
+          levierjaune = levier
+            .create(75, 435, "levierJ", 1)
+            .setScale(3)
+            .refreshBody();
+          levierbleu = levier
+            .create(750, 435, "levierB", 1)
+            .setScale(3)
+            .refreshBody();
+          player = this.physics.add.sprite(775, 10, "archer", 1);
+          player.setCollideWorldBounds(true);
+
+          this.physics.add.collider(player, platforms);
+
+          cursors = this.input.keyboard.createCursorKeys();
+          this.anims.create({
+            key: "left",
+            frames: this.anims.generateFrameNumbers("archer", {
+              start: 0,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "right",
+            frames: this.anims.generateFrameNumbers("archer", {
+              start: 2,
+              end: 3
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          player2 = this.physics.add.sprite(40, 510, "mage", 2);
+          player2.setCollideWorldBounds(true);
+          this.physics.add.collider(player2, platforms);
+          this.physics.add.collider(player2, barriereV);
+          this.physics.add.collider(player, barriereP);
+          this.physics.add.collider(player2, grilleV);
+          this.physics.add.collider(player, grilleP);
+          this.physics.add.collider(player, levierjaune, actlevJ, null, this);
+          this.physics.add.collider(player2, levierjaune, actlevJ, null, this);
+          this.physics.add.collider(player, levierrose, actlevRo, null, this);
+          this.physics.add.collider(player2, levierrose, actlevRo, null, this);
+          this.physics.add.collider(player, levierbleu, actlevB, null, this);
+          this.physics.add.collider(player2, levierbleu, actlevB, null, this);
+
+          this.physics.add.collider(
+            player,
+            boutonbleu,
+            bouton_appuiB,
+            null,
+            this
+          );
+          this.physics.add.collider(
+            player2,
+            boutonbleu,
+            bouton_appuiB,
+            null,
+            this
+          );
+          this.physics.add.collider(
+            player,
+            boutonrouge,
+            bouton_appuiRe,
+            null,
+            this
+          );
+          this.physics.add.collider(
+            player2,
+            boutonrouge,
+            bouton_appuiRe,
+            null,
+            this
+          );
+          this.anims.create({
+            key: "Q",
+            frames: this.anims.generateFrameNumbers("mage", {
+              start: 0,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "D",
+            frames: this.anims.generateFrameNumbers("mage", {
+              start: 2,
+              end: 3
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Rose0",
+            frames: this.anims.generateFrameNumbers("boutonRe", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Rose1",
+            frames: this.anims.generateFrameNumbers("boutonRe", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Rouge0",
+            frames: this.anims.generateFrameNumbers("boutonRo", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Rouge1",
+            frames: this.anims.generateFrameNumbers("boutonRo", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "bleu0",
+            frames: this.anims.generateFrameNumbers("boutonB", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "bleu1",
+            frames: this.anims.generateFrameNumbers("boutonB", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Oran0",
+            frames: this.anims.generateFrameNumbers("boutonO", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Oran1",
+            frames: this.anims.generateFrameNumbers("boutonO", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Jaune0",
+            frames: this.anims.generateFrameNumbers("boutonJ", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Jaune1",
+            frames: this.anims.generateFrameNumbers("boutonJ", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+
+          this.anims.create({
+            key: "V",
+            frames: this.anims.generateFrameNumbers("PorteVert", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+
+          this.anims.create({
+            key: "Vi",
+            frames: this.anims.generateFrameNumbers("PorteViolet", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.physics.add.overlap(player, CleVert, collectCle, null, this);
+          this.physics.add.overlap(player2, CleViolet, collectCle2, null, this);
+          this.physics.add.overlap(player, lave, FallLave, null, this);
+          this.physics.add.overlap(player2, lave, FallLave, null, this);
+          this.physics.add.collider(player, monster, gameover, null, this);
+          this.physics.add.collider(player2, monster, gameover, null, this);
+          this.physics.add.collider(player, monster2, gameover, null, this);
+          this.physics.add.collider(player2, monster2, gameover, null, this);
+          this.physics.add.collider(player, monster3, gameover, null, this);
+          this.physics.add.collider(player2, monster3, gameover, null, this);
+
+          monTime = currentScene.time.addEvent({
+            delay: 1500,
+            callback: function () {
+              tirer3(monster);
+            },
+            callbackScope: this,
+            loop: true
+          });
+
+          monTime2 = currentScene.time.addEvent({
+            delay: 1500,
+            callback: function () {
+              tirer3(monster2);
+            },
+            callbackScope: this,
+            loop: true
+          });
+
+          monTime3 = currentScene.time.addEvent({
+            delay: 1500,
+            callback: function () {
+              tirer4(monster3);
+            },
+            callbackScope: this,
+            loop: true
+          });
+
+          this.physics.add.overlap(groupeBullets, monster, hit, null, this);
+          this.physics.add.overlap(
+            groupeBulletsM,
+            player,
+            gameover,
+            null,
+            this
+          );
+          this.physics.add.overlap(
+            groupeBulletsM,
+            player2,
+            gameover,
+            null,
+            this
+          );
+          this.physics.add.overlap(groupeBullets, monster2, hit2, null, this);
+          this.physics.add.overlap(groupeBullets, monster3, hit3, null, this);
+        }
+
+        update() {
+          if (cursors.left.isDown) {
+            direction = "left";
+            player.setVelocityX(-160);
+            player.anims.play("left", true);
+          } else if (cursors.right.isDown) {
+            direction = "right";
+            player.setVelocityX(160);
+            player.anims.play("right", true);
+          } else {
+            player.setVelocityX(0);
+          }
+
+          if (cursors.up.isDown && player.body.touching.down) {
+            player.setVelocityY(-450);
+          }
+
+          if (Phaser.Input.Keyboard.JustDown(boutonFeu)) {
+            tirer(player, direction);
+          }
+          if (J2Gauche.isDown) {
+            direction2 = "left";
+            player2.setVelocityX(-160);
+            player2.anims.play("Q", true);
+          } else if (J2Droite.isDown) {
+            direction2 = "right";
+            player2.setVelocityX(160);
+            player2.anims.play("D", true);
+          } else {
+            player2.setVelocityX(0);
+          }
+
+          if (J2Haut.isDown && player2.body.touching.down) {
+            player2.setVelocityY(-450);
+          }
+          if (Phaser.Input.Keyboard.JustDown(boutonFeu2)) {
+            tirer2(player2, direction2);
+          }
+
+          etatGB(reappui, barriereprouge);
+
+          if (PorteVert.ouvert == true && PorteViolet.ouvert == true) {
+            game.sound.stopAll();
+            this.scene.start("niveau3");
+          }
+
+          if (levJpos == true) {
+            barrierevjaune.setPosition(580, 290).setScale(2.65).refreshBody();
+          } else if (levJpos == false) {
+            barrierevjaune.setPosition(745, 290).setScale(2.25).refreshBody();
+          }
+
+          if (levRopos == true) {
+            barrierevrose.setPosition(150, 75).setScale(2.65).refreshBody();
+          } else if (levRopos == false) {
+            barrierevrose.setPosition(350, 75).setScale(2.65).refreshBody();
+          }
+
+          if (levBpos == true) {
+            grillevbleu.setPosition(200, 400).setScale(2.25).refreshBody();
+          } else if (levBpos == false) {
+            grillevbleu.setPosition(200, 538).setScale(1.75).refreshBody();
+          }
+
+          if (player.possedeCle == true) {
+            this.physics.add.overlap(
+              player,
+              PorteVert,
+              openPorteVert,
+              null,
+              this
+            );
+          }
+
+          if (player2.possedeCle == true) {
+            this.physics.add.overlap(
+              player2,
+              PorteViolet,
+              openPorteViolet,
+              null,
+              this
+            );
+          }
+          if (test2 == true) {
+            test2 = false;
+            game.sound.stopAll();
+            this.scene.restart("niveau2");
+          }
+        }
+      }
+
+      class niveau3 extends Phaser.Scene {
+        constructor() {
+          super({ key: "niveau3" });
+        }
+
+        preload() {
+          this.load.audio("Hor", "Hornet.mp3");
+          this.load.image("fond", "fond.png");
+          this.load.spritesheet("barriereB", "barriere_grille_bleu.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("barriereJ", "barriere_grille_jaune.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("barriereRe", "barriere_grille_rouge.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("barriereRo", "barriere_grille_rose.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("barriereO", "barriere_grille_orange.png", {
+            frameWidth: 23,
+            frameHeight: 51
+          });
+          this.load.spritesheet("fleche", "fleche.png", {
+            frameWidth: 48,
+            frameHeight: 32
+          });
+          this.load.spritesheet("levierJ", "levier_jaune.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierRe", "levier_rouge.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierB", "levier_bleu.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierO", "levier_orange.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("levierRo", "levier_rose.png", {
+            frameWidth: 16,
+            frameHeight: 16
+          });
+          this.load.spritesheet("boutonJ", "bouton_jaune.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonRe", "bouton_rouge.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonB", "bouton_bleu.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonO", "bouton_orange.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          this.load.spritesheet("boutonRo", "bouton_rose.png", {
+            frameWidth: 48,
+            frameHeight: 15
+          });
+          //TEST SARAH POUR LES FLAMMES
+          this.load.spritesheet("feu", "feu_violet.png", {
+            frameWidth: 48,
+            frameHeight: 32
+          }); //FIN TEST
+          this.load.image("sol", "plateforme_sable.png");
+          this.load.image("plat", "plateforme_fine.png");
+          this.load.image("platM", "plateforme_millieu.png");
+          this.load.spritesheet("archer", "archer.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+          this.load.spritesheet("mage", "mage.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+          this.load.image("CleVert", "cle_vert.png");
+          this.load.image("CleViolet", "cle_violet.png");
+
+          this.load.spritesheet("PorteVert", "porte_vert.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+
+          this.load.spritesheet("PorteViolet", "porte_violet.png", {
+            frameWidth: 48,
+            frameHeight: 48
+          });
+
+          this.load.image("lave", "lave.png");
+
+          this.load.image("skull", "skull.png");
+          this.load.image("skullD", "skullD.png");
+          this.load.spritesheet("Hellfire", "HellFire.png", {
+            frameWidth: 48,
+            frameHeight: 32
+          });
+        }
+
+        create() {
+          roappui = false;
+          reappui = false;
+          levOpos = false;
+          levJpos = false;
+          levBpos = false;
+          currentScene = this;
+          groupeBullets = this.physics.add.group();
+          groupeBulletsM = this.physics.add.group();
+          music = game.sound.add("Hor");
+          music.play();
+          boutonFeu = this.input.keyboard.addKey("down");
+          boutonFeu2 = this.input.keyboard.addKey("S");
+          J2Haut = this.input.keyboard.addKey("Z");
+          J2Gauche = this.input.keyboard.addKey("Q");
+          J2Droite = this.input.keyboard.addKey("D");
+
+          this.add.image(400, 300, "fond").setScale(0.59);
+
+          grilleV = this.physics.add.staticGroup();
+          grilleP = this.physics.add.staticGroup();
+          barriereV = this.physics.add.staticGroup();
+          barriereP = this.physics.add.staticGroup();
+          bouton = this.physics.add.staticGroup();
+
+          this.physics.add.collider(
+            groupeBullets,
+            barriereV,
+            detruire,
+            null,
+            this
+          );
+          this.physics.add.collider(
+            groupeBullets,
+            barriereP,
+            detruire,
+            null,
+            this
+          );
+          this.physics.add.collider(
+            groupeBulletsM,
+            barriereV,
+            detruire,
+            null,
+            this
+          );
+          this.physics.add.collider(
+            groupeBulletsM,
+            barriereP,
+            detruire,
+            null,
+            this
+          );
+          this.physics.add.overlap(
+            groupeBulletsM,
+            barriereV,
+            detruire,
+            null,
+            this
+          );
+          this.physics.add.overlap(
+            groupeBulletsM,
+            barriereP,
+            detruire,
+            null,
+            this
+          );
+
+          platforms = this.physics.add.staticGroup();
+          platforms.create(400, 615, "sol").setScale(2).refreshBody();
+          platforms.create(0, 425, "plat").setScale(1.5).refreshBody();
+          platforms.create(850, 425, "plat").setScale(1.5).refreshBody();
+          platforms.create(340, 520, "plat").setScale(0.5).refreshBody();
+          platforms.create(400, 100, "plat");
+          platforms.create(-50, 240, "plat").setScale(1.5).refreshBody();
+          platforms.create(800, 240, "plat").setScale(1.5).refreshBody();
+          grillepbleu = grilleP
+            .create(110, 514, "barriereB", 2)
+            .setScale(2.75)
+            .refreshBody();
+          grillevorange = grilleV
+            .create(700, 125, "barriereO", 3)
+            .setScale(3.75)
+            .refreshBody();
+          barrierevrose = barriereV
+            .create(180, 125, "barriereRo", 1)
+            .setScale(3.75)
+            .refreshBody();
+
+          barriereprouge = barriereP
+            .create(249, 335, "barriereRe", 0)
+            .setScale(2.75)
+            .refreshBody();
+
+          barrierevjaune = barriereV
+            .create(600, 514, "barriereJ", 1)
+            .setScale(2.75)
+            .refreshBody();
+
+          CleVert = this.physics.add.staticGroup();
+          CleVert.create(20, 370, "CleVert").setScale(2).refreshBody();
+
+          CleViolet = this.physics.add.staticGroup();
+          CleViolet.create(700, 550, "CleViolet").setScale(2).refreshBody();
+
+          PorteVert = this.physics.add.sprite(360, 0, "PorteVert");
+          PorteVert.setScale(1.25);
+          PorteVert.setCollideWorldBounds(true);
+          this.physics.add.collider(PorteVert, platforms);
+
+          lave = this.physics.add.staticGroup();
+          lave.create(280, 597, "lave").setScale(2).refreshBody();
+
+          PorteViolet = this.physics.add.sprite(440, 0, "PorteViolet");
+          PorteViolet.setScale(1.25);
+          PorteViolet.setCollideWorldBounds(true);
+          this.physics.add.collider(PorteViolet, platforms);
+
+          monster = this.physics.add.image(750, 238, "skullD");
+          monster2 = this.physics.add.image(30, 540, "skull");
+
+          this.physics.add.collider(monster, platforms);
+          this.physics.add.collider(monster2, platforms);
+
+          boutonrouge = bouton.create(550, 575, "boutonRe", 0);
+          boutonrose = bouton.create(760, 575, "boutonRo", 0);
+
+          levier = this.physics.add.staticGroup();
+
+          levierjaune = levier
+            .create(175, 385, "levierJ", 1)
+            .setScale(3)
+            .refreshBody();
+          levierbleu = levier
+            .create(630, 200, "levierB", 1)
+            .setScale(3)
+            .refreshBody();
+          levierorange = levier
+            .create(500, 560, "levierO", 1)
+            .setScale(3)
+            .refreshBody();
+          player = this.physics.add.sprite(0, 10, "archer", 1);
+          player.setCollideWorldBounds(true);
+
+          this.physics.add.collider(player, platforms);
+
+          cursors = this.input.keyboard.createCursorKeys();
+          this.anims.create({
+            key: "left",
+            frames: this.anims.generateFrameNumbers("archer", {
+              start: 0,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "right",
+            frames: this.anims.generateFrameNumbers("archer", {
+              start: 2,
+              end: 3
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          player2 = this.physics.add.sprite(775, 10, "mage", 2);
+          player2.setCollideWorldBounds(true);
+          this.physics.add.collider(player2, platforms);
+          this.physics.add.collider(player2, barriereV);
+          this.physics.add.collider(player, barriereP);
+          this.physics.add.collider(player2, grilleV);
+          this.physics.add.collider(player, grilleP);
+          this.physics.add.collider(player, levierjaune, actlevJ, null, this);
+          this.physics.add.collider(player2, levierjaune, actlevJ, null, this);
+          this.physics.add.collider(player, levierorange, actlevO, null, this);
+          this.physics.add.collider(player2, levierorange, actlevO, null, this);
+          this.physics.add.collider(player, levierbleu, actlevB, null, this);
+          this.physics.add.collider(player2, levierbleu, actlevB, null, this);
+
+          this.physics.add.collider(
+            player,
+            boutonrose,
+            bouton_appuiRo,
+            null,
+            this
+          );
+          this.physics.add.collider(
+            player2,
+            boutonrose,
+            bouton_appuiRo,
+            null,
+            this
+          );
+          this.physics.add.collider(
+            player,
+            boutonrouge,
+            bouton_appuiRe,
+            null,
+            this
+          );
+          this.physics.add.collider(
+            player2,
+            boutonrouge,
+            bouton_appuiRe,
+            null,
+            this
+          );
+          this.anims.create({
+            key: "Q",
+            frames: this.anims.generateFrameNumbers("mage", {
+              start: 0,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "D",
+            frames: this.anims.generateFrameNumbers("mage", {
+              start: 2,
+              end: 3
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Rose0",
+            frames: this.anims.generateFrameNumbers("boutonRe", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Rose1",
+            frames: this.anims.generateFrameNumbers("boutonRe", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Rouge0",
+            frames: this.anims.generateFrameNumbers("boutonRo", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Rouge1",
+            frames: this.anims.generateFrameNumbers("boutonRo", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "bleu0",
+            frames: this.anims.generateFrameNumbers("boutonB", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "bleu1",
+            frames: this.anims.generateFrameNumbers("boutonB", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Oran0",
+            frames: this.anims.generateFrameNumbers("boutonO", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Oran1",
+            frames: this.anims.generateFrameNumbers("boutonO", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Jaune0",
+            frames: this.anims.generateFrameNumbers("boutonJ", {
+              start: 0,
+              end: 0
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.anims.create({
+            key: "Jaune1",
+            frames: this.anims.generateFrameNumbers("boutonJ", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+
+          this.anims.create({
+            key: "V",
+            frames: this.anims.generateFrameNumbers("PorteVert", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+
+          this.anims.create({
+            key: "Vi",
+            frames: this.anims.generateFrameNumbers("PorteViolet", {
+              start: 1,
+              end: 1
+            }),
+            frameRate: 10,
+            repeat: -1
+          });
+          this.physics.add.overlap(player, CleVert, collectCle, null, this);
+          this.physics.add.overlap(player2, CleViolet, collectCle2, null, this);
+          this.physics.add.overlap(player, lave, FallLave, null, this);
+          this.physics.add.overlap(player2, lave, FallLave, null, this);
+          this.physics.add.collider(player, monster, gameover, null, this);
+          this.physics.add.collider(player2, monster, gameover, null, this);
+
+          monTime = currentScene.time.addEvent({
+            delay: 1500,
+            callback: function () {
+              tirer3(monster);
+            },
+            callbackScope: this,
+            loop: true
+          });
+          monTime2 = currentScene.time.addEvent({
+            delay: 1500,
+            callback: function () {
+              tirer4(monster2);
+            },
+            callbackScope: this,
+            loop: true
+          });
+          this.physics.add.overlap(groupeBullets, monster, hit, null, this);
+          this.physics.add.overlap(groupeBullets, monster2, hit2, null, this);
+          this.physics.add.overlap(
+            groupeBulletsM,
+            player,
+            gameover,
+            null,
+            this
+          );
+          this.physics.add.overlap(
+            groupeBulletsM,
+            player2,
+            gameover,
+            null,
+            this
+          );
+        }
+
+        update() {
+          if (cursors.left.isDown) {
+            direction = "left";
+            player.setVelocityX(-160);
+            player.anims.play("left", true);
+          } else if (cursors.right.isDown) {
+            direction = "right";
+            player.setVelocityX(160);
+            player.anims.play("right", true);
+          } else {
+            player.setVelocityX(0);
+          }
+
+          if (cursors.up.isDown && player.body.touching.down) {
+            player.setVelocityY(-450);
+          }
+
+          if (Phaser.Input.Keyboard.JustDown(boutonFeu)) {
+            tirer(player, direction);
+          }
+          if (J2Gauche.isDown) {
+            direction2 = "left";
+            player2.setVelocityX(-160);
+            player2.anims.play("Q", true);
+          } else if (J2Droite.isDown) {
+            direction2 = "right";
+            player2.setVelocityX(160);
+            player2.anims.play("D", true);
+          } else {
+            player2.setVelocityX(0);
+          }
+
+          if (J2Haut.isDown && player2.body.touching.down) {
+            player2.setVelocityY(-450);
+          }
+          if (Phaser.Input.Keyboard.JustDown(boutonFeu2)) {
+            tirer2(player2, direction2);
+          }
+
+          etatGB(reappui, barriereprouge);
+          etatGB(roappui, barrierevrose);
+
+          if (levJpos == true) {
+            barrierevjaune.setPosition(600, 125).setScale(3.75).refreshBody();
+          } else if (levJpos == false) {
+            barrierevjaune.setPosition(600, 514).setScale(2.75).refreshBody();
+          }
+
+          if (levBpos == true) {
+            grillepbleu.setPosition(110, 335).setScale(2.75).refreshBody();
+          } else if (levBpos == false) {
+            grillepbleu.setPosition(110, 514).setScale(2.75).refreshBody();
+          }
+          if (levOpos == true) {
+            grillevorange.setPosition(700, 335).setScale(2.75).refreshBody();
+          } else if (levOpos == false) {
+            grillevorange.setPosition(700, 125).setScale(3.75).refreshBody();
+          }
+
+          if (PorteVert.ouvert == true && PorteViolet.ouvert == true) {
+            game.sound.stopAll();
+            this.scene.start("menu");
+          }
+
+          if (player.possedeCle == true) {
+            this.physics.add.overlap(
+              player,
+              PorteVert,
+              openPorteVert,
+              null,
+              this
+            );
+          }
+
+          if (player2.possedeCle == true) {
+            this.physics.add.overlap(
+              player2,
+              PorteViolet,
+              openPorteViolet,
+              null,
+              this
+            );
+          }
+
+          if (test == true) {
+            test = false;
+            game.sound.stopAll();
+            this.scene.restart("niveau3");
+          }
+
+          if (test2 == true) {
+            test2 = false;
+            game.sound.stopAll();
+            this.scene.restart("niveau3");
+          }
+        }
+      }
+
+      function detruire(bullet, BarriereGrille) {
+        //Permet de détruire les projectiles quand il y'a contact en une balle et une barriere ou grille
+        bullet.destroy();
+      }
+
+      function tirer(player, direction) {
+        var coefDir;
+        if (direction == "left") {
+          // La condition donne le sens dans
+          //lequel la balle va partir en changeant
+          //la valeur de coeffdir qui est 1 ou -1 selon la direction
+          coefDir = -1;
+          // on crée la balle a coté du joueur
+          var bullet = groupeBullets.create(
+            player.x + 25 * coefDir, // Crée la balle à 25 pixel à gauche
+            //ou droite du personnage par rapport à coeffdir et
+            // 4 pixel plus bas que son centre
+            player.y - 4,
+            "fleche", // choix de l'image du projectile
+            1
+          );
+        } else {
+          coefDir = 1;
+          var bullet = groupeBullets.create(
+            player.x + 25 * coefDir,
+            player.y - 4,
+            "fleche",
+            0
+          );
+        }
+
+        // parametres physiques de la balle.
+
+        bullet.body.allowGravity = false; // fait que la balle ne tombe pas
+        //et garde sa trajectoire
+        bullet.setVelocity(500 * coefDir, 0); // vitesse en x et en y
+        var monTimer = currentScene.time.addEvent({
+          // Crée un timer qui détruit automatiquement les flèches 5 seconde
+          //apres lancement
+          delay: 5000,
+          callback: function () {
+            bullet.destroy();
+          },
+          callbackScope: this,
+          loop: false
+        });
+      }
+
+      function tirer2(player2, direction2) {
+        var coefDir;
+        if (direction2 == "left") {
+          coefDir = -1;
+          // on crée la balle a coté du joueur
+          var bullet = groupeBullets.create(
+            player2.x + 25 * coefDir,
+            player2.y - 4,
+            "feu",
+            0
+          );
+        } else {
+          coefDir = 1;
+          // on crée la balle a coté du joueur
+          var bullet = groupeBullets.create(
+            player2.x + 25 * coefDir,
+            player2.y - 4,
+            "feu",
+            1
+          );
+        }
+        bullet.body.allowGravity = false;
+        bullet.setVelocity(500 * coefDir, 0); // vitesse en x et en y
+
+        var monTimer = currentScene.time.addEvent({
+          delay: 5000,
+          callback: function () {
+            bullet.destroy();
+          },
+          callbackScope: this,
+          loop: false
+        });
+      }
+
+      function collectCle(player, CleVert) {
+        CleVert.disableBody(true, true);
+        player.possedeCle = true;
+      } // la fonction sert à collecter la clé. Quand l'archer passe dessus, la clé disparait alors de l'écran.
+
+      function collectCle2(player2, CleViolet) {
+        CleViolet.disableBody(true, true);
+        player2.possedeCle = true;
+      } // la fonction sert à collecter la clé. Quand le mage passe dessus, la clé disparait alors de l'écran.
+
+      function openPorteVert(player, PorteVert) {
+        PorteVert.anims.play("V");
+        PorteVert.ouvert = true;
+      } // la fonction sert à ouvrir la porte de l'archer
+
+      function openPorteViolet(player2, PorteViolet) {
+        PorteViolet.anims.play("Vi");
+        PorteViolet.ouvert = true;
+      } // la fonction sert à ouvrir la porte du mage
+
+      function bouton_appuiJ(o1, o2) {
+        // Même fonctionnement pour toutes les fonctions bouton
+        if (o1.x - o2.x < 10) Jappui = true;
+        else Jappui = false; // Si la distance entre o1 ici le personnage et o2 ici le bouton est
+        // inférieur à 10 sur l'axe des abscisses
+        //alors la condition est vérifié
+        if (Jappui == true) {
+          // par rapport à la valeur de Jappui, on choisit une image pour notre bouton
+          o2.setTexture("boutonJ", 1); // setTexture qui nous permet de mettre l'image appropriée
+        } else {
+          o2.setTexture("boutonJ", 0);
+        }
+        var monTimer = currentScene.time.addEvent({
+          //Ce petit bout de code permet de remettre quasi-instantanément le bouton dans sa forme d'origine
+          // lorsque le joueur quitte le bouton.
+          delay: 1,
+          callback: function () {
+            o2.setTexture("boutonJ", 0);
+            Jappui = false;
+          },
+          callbackScope: this,
+          loop: false
+        });
+        return Jappui; // on recupère la valeur de Jappui pour la fonction etatGB
+      }
+
+      function bouton_appuiB(o1, o2) {
+        if (o1.x - o2.x < 10) Bappui = true;
+        else Bappui = false;
+        if (Bappui == true) {
+          o2.setTexture("boutonB", 1);
+        } else {
+          o2.setTexture("boutonB", 0);
+        }
+        var monTimer = currentScene.time.addEvent({
+          delay: 1,
+          callback: function () {
+            o2.setTexture("boutonB", 0);
+            Bappui = false;
+          },
+          callbackScope: this,
+          loop: false
+        });
+        return Bappui;
+      }
+
+      function bouton_appuiO(o1, o2) {
+        if (o1.x - o2.x < 10) Oappui = true;
+        else Oappui = false;
+        if (Oappui == true) {
+          o2.setTexture("boutonO", 1);
+        } else {
+          o2.setTexture("boutonO", 0);
+        }
+        var monTimer = currentScene.time.addEvent({
+          delay: 1,
+          callback: function () {
+            o2.setTexture("boutonO", 0);
+            Oappui = false;
+          },
+          callbackScope: this,
+          loop: false
+        });
+        return Oappui;
+      }
+
+      function bouton_appuiRe(o1, o2) {
+        if (o1.x - o2.x < 10) reappui = true;
+        else reappui = false;
+        if (reappui == true) {
+          o2.setTexture("boutonRe", 1);
+        } else {
+          o2.setTexture("boutonRe", 0);
+        }
+        var monTimer = currentScene.time.addEvent({
+          delay: 1,
+          callback: function () {
+            o2.setTexture("boutonRe", 0);
+            reappui = false;
+          },
+          callbackScope: this,
+          loop: false
+        });
+        return reappui;
+      }
+
+      function bouton_appuiRo(o1, o2) {
+        if (o1.x - o2.x < 10) roappui = true;
+        else roappui = false;
+        if (roappui == true) {
+          o2.setTexture("boutonRo", 1);
+        } else {
+          o2.setTexture("boutonRo", 0);
+        }
+        var monTimer = currentScene.time.addEvent({
+          delay: 1,
+          callback: function () {
+            o2.setTexture("boutonRo", 0);
+            roappui = false;
+          },
+          callbackScope: this,
+          loop: false
+        });
+        return roappui;
+      }
+
+      function etatGB(a, b) {
+        // a correpsond aux variables appui des fonctions bouton précédentes
+        // et b à la barriere ou grille que l'on a décidé d'affecter
+        if (a == true) {
+          // si a est vrai alors b disparait et lorsqu'il repasse faux alors b réapparait avec ses cordonnées de base
+          b.disableBody(false, true); // fais disparaitre b
+        } else if (a == false) {
+          b.enableBody(true, b.x, b.y, true, true); // fait réapparaitre b
+        }
+      }
+
+      function FallLave(player, lave) {
+        test = true;
+      } // la fonction intervient si on est en contact avec la lave, elle donne la valeur true à la variable test.
+
+      function actlevB(o1, o2) {
+        // memme fonctionnement pour toutes fonctions actlev
+        // les leviers étant soit à true soit à false
+        // j'ai choisi de les définir comme false pour l'action par la droite
+        //  et true pour l'action par la gauche
+        if (o1.x - o2.x < 5) levBpos = true;
+        // Si il y'a contact en venant par la gauche met true
+        else if (o1.x - o2.x > 5) levBpos = false; // Si par la droite met false
+        if (levBpos == true) {
+          o2.setTexture("levierB", 2); //met l' image correspondant à l'état true
+        } else {
+          o2.setTexture("levierB", 1); // met l'image correspondant à l'état false
+        }
+        return levBpos; // recupère la valeur de la variable correspondant aux d
+        //eux états du levier
+      }
+
+      function actlevO(o1, o2) {
+        if (o1.x - o2.x < 5) levOpos = true;
+        else if (o1.x - o2.x > 5) levOpos = false;
+        if (levOpos == true) {
+          o2.setTexture("levierO", 2);
+        } else {
+          o2.setTexture("levierO", 1);
+        }
+        return levOpos;
+      }
+
+      function actlevJ(o1, o2) {
+        if (o1.x - o2.x < 5) levJpos = true;
+        else if (o1.x - o2.x > 5) levJpos = false;
+        if (levJpos == true) {
+          o2.setTexture("levierJ", 2);
+        } else {
+          o2.setTexture("levierJ", 1);
+        }
+        return levJpos;
+      }
+
+      function actlevRo(o1, o2) {
+        if (o1.x - o2.x < 5) levRopos = true;
+        else if (o1.x - o2.x > 5) levRopos = false;
+        if (levRopos == true) {
+          o2.setTexture("levierRo", 2);
+        } else {
+          o2.setTexture("levierRo", 1);
+        }
+        return levRopos;
+      }
+
+      function actlevRe(o1, o2) {
+        if (o1.x - o2.x < 5) levRepos = true;
+        else if (o1.x - o2.x > 5) levRepos = false;
+        if (levRepos == true) {
+          o2.setTexture("levierRe", 2);
+        } else {
+          o2.setTexture("levierRe", 1);
+        }
+        return levRepos;
+      }
+
+      function tirer3(monster) {
+        var coefDir;
+        coefDir = -1;
+        // on crée la balle a coté du joueur
+        var bullet = groupeBulletsM.create(
+          monster.x + 25 * coefDir,
+          monster.y - 4,
+          "Hellfire",
+          0
+        );
+        bullet.body.allowGravity = false;
+        bullet.setVelocity(500 * coefDir, 0); // vitesse en x et en y
+
+        var monTimer = currentScene.time.addEvent({
+          delay: 5000,
+          callback: function () {
+            bullet.destroy();
+          },
+          callbackScope: this,
+          loop: false
+        });
+      }
+
+      function tirer4(monster) {
+        var coefDir;
+        coefDir = 1;
+        // on crée la balle a coté du joueur
+        var bullet = groupeBulletsM.create(
+          monster.x + 25 * coefDir,
+          monster.y - 4,
+          "Hellfire",
+          1
+        );
+        bullet.body.allowGravity = false;
+        bullet.setVelocity(500 * coefDir, 0); // vitesse en x et en y
+
+        var monTimer = currentScene.time.addEvent({
+          delay: 5000,
+          callback: function () {
+            bullet.destroy();
+          },
+          callbackScope: this,
+          loop: false
+        });
+      }
+
+      function hit(uneBalle, uneCible) {
+        uneBalle.destroy(); // destruction de la balle
+        uneCible.destroy(); // destruction de la cible.
+        monTime.remove(); // retire le timer du nom correspondant
+      }
+      function hit2(uneBalle, uneCible) {
+        uneBalle.destroy(); // destruction de la balle
+        uneCible.destroy(); // destruction de la cible.
+        monTime2.remove();
+      }
+      function hit3(uneBalle, uneCible) {
+        uneBalle.destroy(); // destruction de la balle
+        uneCible.destroy(); // destruction de la cible.
+        monTime3.remove();
+      }
+
+      function gameover(player, monster) {
+        test2 = true;
+      } //la fonction intervient si on est en contact avec un skull où un de ces projectiles. Elle passe la variable test2 à true.
+    </script>
+  </body>
+</html>
